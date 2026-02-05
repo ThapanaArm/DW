@@ -39,7 +39,7 @@ namespace BIS_INTERFACE_BC
             //await BusinnessPartnerCustomerCompany("BusinnessPartnerCustomerCompany");
             //await BusinnessPartnerCustomerSalesaArea("BusinnessPartnerCustomerSalesaArea");
             //await BusinessPartnerCustSalesPartnerFunc("BusinessPartnerCustSalesPartnerFunc");
-            //await BusinessPartnerCustSalesSupplier("BusinessPartnerCustSalesSupplier"); --Kamonwan 050269
+            //await BusinessPartnerCustSalesSupplier("BusinessPartnerCustSalesSupplier"); //--Kamonwan 050269
             
 
             ////Sales Order
@@ -2183,8 +2183,8 @@ namespace BIS_INTERFACE_BC
                             UpdateDate
                         ) VALUES (
                             '{supplier}',
-                            '{supplierName}',
-                            '{supplierFullName}',
+                            N'{supplierName}',
+                            N'{supplierFullName}',
                             '{accountGroup}',
                             '{paymentBlocked}',
                             '{createdBy}',
