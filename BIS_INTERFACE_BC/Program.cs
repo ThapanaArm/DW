@@ -39,6 +39,8 @@ namespace BIS_INTERFACE_BC
             //await BusinnessPartnerCustomerCompany("BusinnessPartnerCustomerCompany");
             //await BusinnessPartnerCustomerSalesaArea("BusinnessPartnerCustomerSalesaArea");
             //await BusinessPartnerCustSalesPartnerFunc("BusinessPartnerCustSalesPartnerFunc");
+            //await BusinessPartnerCustSalesSupplier("BusinessPartnerCustSalesSupplier"); --Kamonwan 050269
+            
 
             ////Sales Order
             //await AddSalesOrder("SalesOrder");
@@ -2131,7 +2133,100 @@ namespace BIS_INTERFACE_BC
                 Console.WriteLine(e.Message);
             }
         }
+        private static async Task BusinessPartnerCustSalesSupplier(string sText)
+        {
+            var batchSql = new StringBuilder();
+            int rowCount = 0;
+            string _url = "";
 
+            try
+            {
+                var helper = new ODataHelper();
+
+                // 1. ดึง URL จาก Setting
+                _url = SQLConnect.GetStringValue(@"SELECT [DataSyntax] FROM [Setting_SyncData] WHERE DataType = 'Supplier' AND IsActive = 1 AND DataSource = 'OData'", "dbDW");
+
+                // 2. ดึงข้อมูล OData → DataTable
+                DataTable dt = await helper.FetchAllODataAsync(_url, _USERNAME, _PASSWORD);
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    string supplier = row["Supplier"].ToString().Replace("'", "''");
+                    string supplierName = row["SupplierName"].ToString().Replace("'", "''");
+                    string supplierFullName = row["SupplierFullName"].ToString().Replace("'", "''");
+                    string accountGroup = row["SupplierAccountGroup"].ToString();
+                    string createdBy = row["CreatedByUser"].ToString();
+                    string creationDate = row["CreationDate"].ToString();
+                    string paymentBlocked = row["PaymentIsBlockedForSupplier"].ToString();
+
+                    batchSql.AppendLine($@"
+                    IF EXISTS (SELECT 1 FROM MS_Supplier WHERE Supplier = '{supplier}')
+                    BEGIN
+                        UPDATE MS_Supplier SET
+                            SupplierName = '{supplierName}',
+                            SupplierFullName = '{supplierFullName}',
+                            SupplierAccountGroup = '{accountGroup}',
+                            PaymentIsBlockedForSupplier = '{paymentBlocked}',
+                            UpdateDate = GETDATE()
+                        WHERE Supplier = '{supplier}';
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO MS_Supplier (
+                            Supplier,
+                            SupplierName,
+                            SupplierFullName,
+                            SupplierAccountGroup,
+                            PaymentIsBlockedForSupplier,
+                            CreatedByUser,
+                            CreationDate,
+                            UpdateDate
+                        ) VALUES (
+                            '{supplier}',
+                            '{supplierName}',
+                            '{supplierFullName}',
+                            '{accountGroup}',
+                            '{paymentBlocked}',
+                            '{createdBy}',
+                            '{creationDate}',
+                            GETDATE()
+                        );
+                    END
+                    ");
+
+                    rowCount++;
+
+                    // batch ทีละ 100
+                    if (rowCount % 100 == 0)
+                    {
+                        SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+                        batchSql.Clear();
+                    }
+                }
+
+                if (batchSql.Length > 0)
+                {
+                    SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+                }
+
+                SQLConnect.Updatedata(
+                    "INSERT INTO Log_Status(Process,Status,LogDate) VALUES ('Supplier','Successful',GETDATE())",
+                    "dbDW"
+                );
+
+                Console.WriteLine($"Supplier : Sync Successful ({rowCount} rows)");
+            }
+            catch (Exception e)
+            {
+                string errMsg = e.Message.Replace("'", "''");
+                SQLConnect.Updatedata($@"INSERT INTO Log_Status(Process,Status,LogDate,LogDescription)VALUES ('Supplier','Fail',GETDATE(),'{errMsg}')", "dbDW");
+
+                Console.WriteLine(e.Message);
+            }
+        }
 
     }
+
+
 }
+
