@@ -22,59 +22,58 @@ namespace BIS_INTERFACE_BC
         { // รันงาน sync แบบ block ให้จบก่อน
 
             ////Product
-            //await Product("Product");
-            //await ProductDescription("ProductDescription");
-            //await ProductPlant("ProductPlant");
-            //await ProductPlantProcurement("ProductPlantProcurement"); //ปรับถึงนี้
-            //await ProductSalesDelivery("ProductPlantProcurement");
-            //await ProductSalesTax("ProductSalesTax");
-            //await ProductStorage("ProductStorage");
-            //await ProductUnitsOfMeasure("ProductUnitsOfMeasure");
+            await Product("Product");
+            await ProductDescription("ProductDescription");
+            await ProductPlant("ProductPlant");
+            await ProductPlantProcurement("ProductPlantProcurement"); //ปรับถึงนี้
+            await ProductSalesDelivery("ProductPlantProcurement");
+            await ProductSalesTax("ProductSalesTax");
+            await ProductStorage("ProductStorage");
+            await ProductUnitsOfMeasure("ProductUnitsOfMeasure");
 
 
             ////Business Partner
             await BusinessPartner("BusinessPartner");
             await BusinessPartnerAddress("BusinessPartnerAddress");
-            //await BusinessPartnerEmail("BusinessPartnerEmail");
-            //await BusinessPartnerPhone("BusinessPartnerPhone");
+            await BusinessPartnerEmail("BusinessPartnerEmail");
+            await BusinessPartnerPhone("BusinessPartnerPhone");
             await BusinnessPartnerCustomer("BusinnessPartnerCustomer");
-            //await BusinnessPartnerCustomerCompany("BusinnessPartnerCustomerCompany");
-            //await BusinnessPartnerCustomerSalesaArea("BusinnessPartnerCustomerSalesaArea");
-            //await BusinessPartnerCustSalesPartnerFunc("BusinessPartnerCustSalesPartnerFunc");
-            //await BusinessPartnerCustSalesSupplier("BusinessPartnerCustSalesSupplier"); //--Kamonwan 050269
-            //await BusinessPartnerCustSalesSupplierCompany("BusinessPartnerCustSalesSupplierCompany"); //--Kamonwan 060269
+            await BusinnessPartnerCustomerCompany("BusinnessPartnerCustomerCompany");
+            await BusinnessPartnerCustomerSalesaArea("BusinnessPartnerCustomerSalesaArea");
+            await BusinessPartnerCustSalesPartnerFunc("BusinessPartnerCustSalesPartnerFunc");
+            await BusinessPartnerCustSalesSupplier("BusinessPartnerCustSalesSupplier"); //--Kamonwan 050269
+            await BusinessPartnerCustSalesSupplierCompany("BusinessPartnerCustSalesSupplierCompany"); //--Kamonwan 060269
 
 
             ////Sales Order
-            //await AddSalesOrder("SalesOrder");
-           //.
-           //await UpdateSalesOrder("SalesOrder");
-            //await RecheckcSalesOrderHeaderPartner("Recheck");
+            await AddSalesOrder("SalesOrder");
+            await UpdateSalesOrder("SalesOrder");
+            await RecheckcSalesOrderHeaderPartner("Recheck");
 
 
             ////OutbDelivery
-            //await AddOutbDelivery("OutbDelivery");
+            await AddOutbDelivery("OutbDelivery");
             ////Billing
-            //await AddBilling("Billing");
-            //await UpdateBilling("Billing");
+            await AddBilling("Billing");
+            await UpdateBilling("Billing");
 
             //MaterialStock
             //await MaterialStockInAcctMod("MaterialStockInAcctMod"); //--Kamonwan 060269
 
             //Purchase 
-            //await PurchaseOrder("PurchaseOrder"); //--Kamonwan 060269
-            //await PurchaseOrderItem("PurchaseOrderItem"); //--Kamonwan 060269
-            //await PurchaseOrderItemNote("PurchaseOrderItemNote"); //--Kamonwan 060269
-            //await PurchaseOrderNote("PurchaseOrderNote"); //--Kamonwan 060269
-            //await PurchaseOrderScheduleLine("PurchaseOrderScheduleLine"); //--Kamonwan 060269
-            //await PurOrdAccountAssignment("PurOrdAccountAssignment"); //--Kamonwan 060269
-            //await PurOrdPricingElement("PurOrdPricingElement"); //--Kamonwan 060269
-            //await PurchaseRequisitionHeader("PurchaseRequisitionHeader"); //--Kamonwan 060269
-            //await PurchaseRequisitionItem("PurchaseRequisitionItem"); //--Kamonwan 060269
-            //await PurReqAddDelivery("PurReqAddDelivery"); //--Kamonwan 060269
-            //await PurReqnAcctAssgmt("PurReqnAcctAssgmt"); //--Kamonwan 060269
-            //await InboundDeliveryHeader("InboundDeliveryHeader"); //--Kamonwan 060269
-            //await InboundDeliveryItem("InboundDeliveryItem"); //--Kamonwan 060269
+            await PurchaseOrder("PurchaseOrder"); //--Kamonwan 060269
+            await PurchaseOrderItem("PurchaseOrderItem"); //--Kamonwan 060269
+            await PurchaseOrderItemNote("PurchaseOrderItemNote"); //--Kamonwan 060269
+            await PurchaseOrderNote("PurchaseOrderNote"); //--Kamonwan 060269
+            await PurchaseOrderScheduleLine("PurchaseOrderScheduleLine"); //--Kamonwan 060269
+            await PurOrdAccountAssignment("PurOrdAccountAssignment"); //--Kamonwan 060269
+            await PurOrdPricingElement("PurOrdPricingElement"); //--Kamonwan 060269
+            await PurchaseRequisitionHeader("PurchaseRequisitionHeader"); //--Kamonwan 060269
+            await PurchaseRequisitionItem("PurchaseRequisitionItem"); //--Kamonwan 060269
+            await PurReqAddDelivery("PurReqAddDelivery"); //--Kamonwan 060269
+            await PurReqnAcctAssgmt("PurReqnAcctAssgmt"); //--Kamonwan 060269
+            await InboundDeliveryHeader("InboundDeliveryHeader"); //--Kamonwan 060269
+            await InboundDeliveryItem("InboundDeliveryItem"); //--Kamonwan 060269
 
 
             ServiceBase[] ServicesToRun;
@@ -809,7 +808,7 @@ namespace BIS_INTERFACE_BC
                             [LastName], [PersonNumber]
                         ) VALUES (
                             '{bp}', '{row["Customer"]}', '{row["Supplier"]}', '{row["AcademicTitle"]}', '{row["AuthorizationGroup"]}', 
-                            '{row["BusinessPartnerCategory"]}', N'{bpFull}', '{row["BusinessPartnerGrouping"]}', 
+                            '{row["BusinessPartnerCategory"]}', '{bpFull}', '{row["BusinessPartnerGrouping"]}', 
                             '{bpName}', N'{firstName}', '{formattedLastChange}', '{org1}', 
                             '{org2}', '{searchTerm1}', '{searchTerm2}', '{row["Etag"]}', '{formattedCreation}', 
                             '{lastName}', '{row["PersonNumber"]}'
