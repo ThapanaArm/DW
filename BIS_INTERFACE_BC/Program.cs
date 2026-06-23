@@ -29,22 +29,26 @@ namespace BIS_INTERFACE_BC
             //await ProductSalesDelivery("ProductPlantProcurement");
             //await ProductSalesTax("ProductSalesTax");
             //await ProductStorage("ProductStorage");
+            //await ProductUnitsOfMeasure("ProductUnitsOfMeasure");
+
 
             ////Business Partner
-            //await BusinessPartner("BusinessPartner");
-            //await BusinessPartnerAddress("BusinessPartnerAddress");
+            await BusinessPartner("BusinessPartner");
+            await BusinessPartnerAddress("BusinessPartnerAddress");
             //await BusinessPartnerEmail("BusinessPartnerEmail");
             //await BusinessPartnerPhone("BusinessPartnerPhone");
-            //await BusinnessPartnerCustomer("BusinnessPartnerCustomer");
+            await BusinnessPartnerCustomer("BusinnessPartnerCustomer");
             //await BusinnessPartnerCustomerCompany("BusinnessPartnerCustomerCompany");
             //await BusinnessPartnerCustomerSalesaArea("BusinnessPartnerCustomerSalesaArea");
             //await BusinessPartnerCustSalesPartnerFunc("BusinessPartnerCustSalesPartnerFunc");
             //await BusinessPartnerCustSalesSupplier("BusinessPartnerCustSalesSupplier"); //--Kamonwan 050269
-            
+            //await BusinessPartnerCustSalesSupplierCompany("BusinessPartnerCustSalesSupplierCompany"); //--Kamonwan 060269
+
 
             ////Sales Order
             //await AddSalesOrder("SalesOrder");
-            //await UpdateSalesOrder("SalesOrder");
+           //.
+           //await UpdateSalesOrder("SalesOrder");
             //await RecheckcSalesOrderHeaderPartner("Recheck");
 
 
@@ -54,8 +58,23 @@ namespace BIS_INTERFACE_BC
             //await AddBilling("Billing");
             //await UpdateBilling("Billing");
 
+            //MaterialStock
+            //await MaterialStockInAcctMod("MaterialStockInAcctMod"); //--Kamonwan 060269
 
-
+            //Purchase 
+            //await PurchaseOrder("PurchaseOrder"); //--Kamonwan 060269
+            //await PurchaseOrderItem("PurchaseOrderItem"); //--Kamonwan 060269
+            //await PurchaseOrderItemNote("PurchaseOrderItemNote"); //--Kamonwan 060269
+            //await PurchaseOrderNote("PurchaseOrderNote"); //--Kamonwan 060269
+            //await PurchaseOrderScheduleLine("PurchaseOrderScheduleLine"); //--Kamonwan 060269
+            //await PurOrdAccountAssignment("PurOrdAccountAssignment"); //--Kamonwan 060269
+            //await PurOrdPricingElement("PurOrdPricingElement"); //--Kamonwan 060269
+            //await PurchaseRequisitionHeader("PurchaseRequisitionHeader"); //--Kamonwan 060269
+            //await PurchaseRequisitionItem("PurchaseRequisitionItem"); //--Kamonwan 060269
+            //await PurReqAddDelivery("PurReqAddDelivery"); //--Kamonwan 060269
+            //await PurReqnAcctAssgmt("PurReqnAcctAssgmt"); //--Kamonwan 060269
+            //await InboundDeliveryHeader("InboundDeliveryHeader"); //--Kamonwan 060269
+            //await InboundDeliveryItem("InboundDeliveryItem"); //--Kamonwan 060269
 
 
             ServiceBase[] ServicesToRun;
@@ -109,69 +128,71 @@ namespace BIS_INTERFACE_BC
                 foreach (DataRow row in dt.Rows)
                 {
                     string product = row["Product"].ToString().Replace("'", "''");
-                    // 1. ระบุ Culture เป็นไทย เพื่อรองรับปี 2568
+                    string productOldID = row["ProductOldID"]?.ToString().Replace("'", "''");
+
                     CultureInfo thaiCulture = new CultureInfo("th-TH");
 
-                    // 2. ดึงค่าจาก row ออกมาเป็น string
                     string rawDate = row["CreationDate"].ToString();
-
                     string formattedCreation;
                     string formattedLastChange;
-                    // 3. ใช้ TryParseExact เพื่อป้องกัน Error หาก String มี Format แปลกๆ
+
                     if (DateTime.TryParseExact(rawDate, "d/M/yyyy H:mm:ss", thaiCulture, DateTimeStyles.None, out DateTime tempDate))
                     {
-                        // แปลงเป็น ค.ศ. และ Format ที่ต้องการ
                         formattedCreation = tempDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
                     }
                     else
                     {
-                        // กรณี Parse ไม่ผ่าน (เช่น ข้อมูลว่าง หรือ Format ไม่ตรงกับ d/M/yyyy H:mm:ss)
-                        formattedCreation = "1900-01-01"; // หรือค่า Default อื่นๆ
+                        formattedCreation = "1900-01-01";
                     }
-
-
 
                     string rawDateLastChange = row["LastChangeDate"].ToString();
 
-                    // 3. ใช้ TryParseExact เพื่อป้องกัน Error หาก String มี Format แปลกๆ
                     if (DateTime.TryParseExact(rawDateLastChange, "d/M/yyyy H:mm:ss", thaiCulture, DateTimeStyles.None, out DateTime tempLastDate))
                     {
-                        // แปลงเป็น ค.ศ. และ Format ที่ต้องการ
                         formattedLastChange = tempLastDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
                     }
                     else
                     {
-                        // กรณี Parse ไม่ผ่าน (เช่น ข้อมูลว่าง หรือ Format ไม่ตรงกับ d/M/yyyy H:mm:ss)
-                        formattedLastChange = "1900-01-01"; // หรือค่า Default อื่นๆ
+                        formattedLastChange = "1900-01-01";
                     }
 
-                    // ใช้ SQL Logic จัดการ Insert/Update ในคำสั่งเดียว
-                    batchSql.AppendLine($@"
-                IF EXISTS (SELECT 1 FROM Ms_Product WHERE Product = '{product}')
-                BEGIN
-                    UPDATE Ms_Product SET 
-                        ProductGroup = '{row["ProductGroup"]}', ProductType = '{row["ProductType"]}',
-                        LastChangeDate = '{formattedLastChange}', GrossWeight = '{row["GrossWeight"]}',
-                        NetWeight = '{row["NetWeight"]}', BaseUnit = '{row["BaseUnit"]}',
-                        HSCODE_PRD = '{row["YY1_HSCODE_PRD"]}'
-                    WHERE Product = '{product}';
-                END
-                ELSE
-                BEGIN
-                    INSERT INTO Ms_Product (Product, ProductGroup, ProductType, CreationDate, LastChangeDate, GrossWeight, NetWeight, BaseUnit, HSCODE_PRD)
-                    VALUES ('{product}', '{row["ProductGroup"]}', '{row["ProductType"]}', '{formattedCreation}', '{formattedLastChange}', '{row["GrossWeight"]}', '{row["NetWeight"]}', '{row["BaseUnit"]}', '{row["YY1_HSCODE_PRD"]}');
-                END");
+                            batchSql.AppendLine($@"
+                                IF EXISTS (SELECT 1 FROM Ms_Product WHERE Product = '{product}')
+                                BEGIN
+                                    UPDATE Ms_Product SET 
+                                        ProductGroup = '{row["ProductGroup"]}',
+                                        ProductType = '{row["ProductType"]}',
+                                        LastChangeDate = '{formattedLastChange}',
+                                        GrossWeight = '{row["GrossWeight"]}',
+                                        NetWeight = '{row["NetWeight"]}',
+                                        BaseUnit = '{row["BaseUnit"]}',
+                                        HSCODE_PRD = '{row["YY1_HSCODE_PRD"]}',
+                                        ProductOldID = '{productOldID}'
+                                    WHERE Product = '{product}';
+                                END
+                                ELSE
+                                BEGIN
+                            INSERT INTO Ms_Product 
+                            (Product, ProductGroup, ProductType, CreationDate, LastChangeDate, GrossWeight, NetWeight, BaseUnit, HSCODE_PRD, ProductOldID)
+                            VALUES 
+                            ('{product}', '{row["ProductGroup"]}', '{row["ProductType"]}', '{formattedCreation}', '{formattedLastChange}', 
+                             '{row["GrossWeight"]}', '{row["NetWeight"]}', '{row["BaseUnit"]}', '{row["YY1_HSCODE_PRD"]}', '{productOldID}');
+                            END");
 
                     rowCount++;
-                    if (rowCount % 100 == 0) // ทุกๆ 100 แถว ให้ยิงเข้า DB ทีเดียว
+
+                    if (rowCount % 100 == 0)
                     {
                         SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
                         batchSql.Clear();
                     }
                 }
-                if (batchSql.Length > 0) SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+
+                if (batchSql.Length > 0)
+                    SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
 
                 SQLConnect.Updatedata("INSERT INTO Log_Status(Process,Status,LogDate) VALUES ('Product','Successful',getdate());", "dbDW");
+
                 Console.WriteLine($"Product : Sync Successful ({rowCount} rows)");
             }
             catch (Exception e)
@@ -179,6 +200,7 @@ namespace BIS_INTERFACE_BC
                 SQLConnect.Updatedata($"INSERT INTO Log_Status(Process,Status,LogDate,LogDescription) VALUES ('Product','Fail',getdate(),'{e.Message.Replace("'", "''")}');", "dbDW");
             }
         }
+
         private static async Task ProductDescription(string sText)
         {
             var batchSql = new StringBuilder();
@@ -204,19 +226,19 @@ namespace BIS_INTERFACE_BC
 
                     // 3. ใช้ SQL Logic เพื่อตัดสินใจ Insert หรือ Update ที่ฝั่ง Server เลย (ลดการ Query Check จาก C#)
                     batchSql.AppendLine($@"
-                IF EXISTS (SELECT 1 FROM Ms_ProductDescription WHERE Product = '{product}')
-                BEGIN
-                    UPDATE Ms_ProductDescription SET 
-                        ProductDescription = '{description}', 
-                        Language = '{language}', 
-                        UpdateDate = GETDATE()
-                    WHERE Product = '{product}';
-                END
-                ELSE
-                BEGIN
-                    INSERT INTO Ms_ProductDescription (Product, ProductDescription, Language, UpdateDate)
-                    VALUES ('{product}', '{description}', '{language}', GETDATE());
-                END");
+                        IF EXISTS (SELECT 1 FROM Ms_ProductDescription WHERE Product = '{product}')
+                        BEGIN
+                            UPDATE Ms_ProductDescription SET 
+                                ProductDescription = '{description}', 
+                                Language = '{language}', 
+                                UpdateDate = GETDATE()
+                            WHERE Product = '{product}';
+                        END
+                        ELSE
+                        BEGIN
+                            INSERT INTO Ms_ProductDescription (Product, ProductDescription, Language, UpdateDate)
+                            VALUES ('{product}', '{description}', '{language}', GETDATE());
+                        END");
 
                     rowCount++;
 
@@ -269,24 +291,24 @@ namespace BIS_INTERFACE_BC
 
                     // 3. ใช้ SQL IF EXISTS เพื่อจัดการทั้ง Insert และ Update ในคำสั่งเดียว (ลดการ Round-trip)
                     batchSql.AppendLine($@"
-                IF EXISTS (SELECT 1 FROM MS_ProductPlant WHERE Product = '{product}')
-                BEGIN
-                    UPDATE MS_ProductPlant SET 
-                        Plant = '{plant}',
-                        PurchasingGroup = '{row["PurchasingGroup"]}',
-                        CountryOfOrigin = '{row["CountryOfOrigin"]}',
-                        AvailabilityChecktype = '{row["AvailabilityChecktype"]}',
-                        PeriodType = '{row["PeriodType"]}',
-                        ProfitCenter = '{row["ProfitCenter"]}',
-                        MaintenanceStatusName = '{row["MaintenanceStatusName"]}',
-                        MRPType = '{row["MRPType"]}',
-                        MinimumLotSizeQuantity = '{row["MinimumLotSizeQuantity"]}',
-                        MaximumLotSizeQuantity = '{row["MaximumLotSizeQuantity"]}',
-                        UpdateDate = GETDATE()
-                    WHERE Product = '{product}';
-                END
-                ELSE
-                BEGIN
+                        IF EXISTS (SELECT 1 FROM MS_ProductPlant WHERE Product = '{product}')
+                        BEGIN
+                            UPDATE MS_ProductPlant SET 
+                                Plant = '{plant}',
+                                PurchasingGroup = '{row["PurchasingGroup"]}',
+                                CountryOfOrigin = '{row["CountryOfOrigin"]}',
+                                AvailabilityChecktype = '{row["AvailabilityChecktype"]}',
+                                PeriodType = '{row["PeriodType"]}',
+                                ProfitCenter = '{row["ProfitCenter"]}',
+                                MaintenanceStatusName = '{row["MaintenanceStatusName"]}',
+                                MRPType = '{row["MRPType"]}',
+                                MinimumLotSizeQuantity = '{row["MinimumLotSizeQuantity"]}',
+                                MaximumLotSizeQuantity = '{row["MaximumLotSizeQuantity"]}',
+                                UpdateDate = GETDATE()
+                            WHERE Product = '{product}';
+                        END
+                        ELSE
+                        BEGIN
                     INSERT INTO MS_ProductPlant (
                         Product, Plant, PurchasingGroup, CountryOfOrigin, AvailabilityChecktype, 
                         PeriodType, ProfitCenter, MaintenanceStatusName, MRPType, 
@@ -296,7 +318,7 @@ namespace BIS_INTERFACE_BC
                         '{row["PeriodType"]}', '{row["ProfitCenter"]}', '{row["MaintenanceStatusName"]}', '{row["MRPType"]}', 
                         '{row["MinimumLotSizeQuantity"]}', '{row["MaximumLotSizeQuantity"]}', GETDATE()
                     );
-                END");
+                     END");
 
                     rowCount++;
 
@@ -348,18 +370,18 @@ namespace BIS_INTERFACE_BC
 
                     // 3. ใช้ SQL "UPSERT" Logic (IF EXISTS) เพื่อรวมคำสั่งเช็คและเขียนข้อมูลในจังหวะเดียว
                     batchSql.AppendLine($@"
-                IF EXISTS (SELECT 1 FROM Ms_ProductPlantProcurement WHERE Product = '{product}')
-                BEGIN
-                    UPDATE Ms_ProductPlantProcurement SET 
-                        Plant = '{plant}', 
-                        UpdateDate = GETDATE()
-                    WHERE Product = '{product}';
-                END
-                ELSE
-                BEGIN
-                    INSERT INTO Ms_ProductPlantProcurement (Product, Plant, UpdateDate)
-                    VALUES ('{product}', '{plant}', GETDATE());
-                END");
+                    IF EXISTS (SELECT 1 FROM Ms_ProductPlantProcurement WHERE Product = '{product}')
+                    BEGIN
+                        UPDATE Ms_ProductPlantProcurement SET 
+                            Plant = '{plant}', 
+                            UpdateDate = GETDATE()
+                        WHERE Product = '{product}';
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO Ms_ProductPlantProcurement (Product, Plant, UpdateDate)
+                        VALUES ('{product}', '{plant}', GETDATE());
+                    END");
 
                     rowCount++;
 
@@ -413,31 +435,31 @@ namespace BIS_INTERFACE_BC
                     // 3. สร้าง SQL Logic แบบ "ถ้ามีให้ Update ถ้าไม่มีให้ Insert" (UPSERT)
                     // หมายเหตุ: มีการ Map ชื่อ Field จาก OData (FirstSalesSpec...) ไปยังตาราง (MaterialGroup...)
                     batchSql.AppendLine($@"
-                IF EXISTS (SELECT 1 FROM Ms_ProductSalesDelivery WHERE Product = '{product}')
-                BEGIN
-                    UPDATE Ms_ProductSalesDelivery SET 
-                        ProductSalesOrg = '{row["ProductSalesOrg"]}',
-                        ProductDistributionChnl = '{row["ProductDistributionChnl"]}',
-                        SupplyingPlant = '{row["SupplyingPlant"]}',
-                        AccountDetnProductGroup = '{row["AccountDetnProductGroup"]}',
-                        ItemCategoryGroup = '{row["ItemCategoryGroup"]}',
-                        MaterialGroup1 = '{row["FirstSalesSpecProductGroup"]}',
-                        MaterialGroup2 = '{row["SecondSalesSpecProductGroup"]}',
-                        UpdateDate = GETDATE()
-                    WHERE Product = '{product}';
-                END
-                ELSE
-                BEGIN
-                    INSERT INTO Ms_ProductSalesDelivery (
-                        Product, ProductSalesOrg, ProductDistributionChnl, SupplyingPlant, 
-                        AccountDetnProductGroup, ItemCategoryGroup, MaterialGroup1, 
-                        MaterialGroup2, UpdateDate
-                    ) VALUES (
-                        '{product}', '{row["ProductSalesOrg"]}', '{row["ProductDistributionChnl"]}', '{row["SupplyingPlant"]}', 
-                        '{row["AccountDetnProductGroup"]}', '{row["ItemCategoryGroup"]}', '{row["FirstSalesSpecProductGroup"]}', 
-                        '{row["SecondSalesSpecProductGroup"]}', GETDATE()
-                    );
-                END");
+                    IF EXISTS (SELECT 1 FROM Ms_ProductSalesDelivery WHERE Product = '{product}')
+                    BEGIN
+                        UPDATE Ms_ProductSalesDelivery SET 
+                            ProductSalesOrg = '{row["ProductSalesOrg"]}',
+                            ProductDistributionChnl = '{row["ProductDistributionChnl"]}',
+                            SupplyingPlant = '{row["SupplyingPlant"]}',
+                            AccountDetnProductGroup = '{row["AccountDetnProductGroup"]}',
+                            ItemCategoryGroup = '{row["ItemCategoryGroup"]}',
+                            MaterialGroup1 = '{row["FirstSalesSpecProductGroup"]}',
+                            MaterialGroup2 = '{row["SecondSalesSpecProductGroup"]}',
+                            UpdateDate = GETDATE()
+                        WHERE Product = '{product}';
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO Ms_ProductSalesDelivery (
+                            Product, ProductSalesOrg, ProductDistributionChnl, SupplyingPlant, 
+                            AccountDetnProductGroup, ItemCategoryGroup, MaterialGroup1, 
+                            MaterialGroup2, UpdateDate
+                        ) VALUES (
+                            '{product}', '{row["ProductSalesOrg"]}', '{row["ProductDistributionChnl"]}', '{row["SupplyingPlant"]}', 
+                            '{row["AccountDetnProductGroup"]}', '{row["ItemCategoryGroup"]}', '{row["FirstSalesSpecProductGroup"]}', 
+                            '{row["SecondSalesSpecProductGroup"]}', GETDATE()
+                        );
+                    END");
 
                     rowCount++;
 
@@ -491,20 +513,20 @@ namespace BIS_INTERFACE_BC
 
                     // 3. ใช้ SQL IF EXISTS เพื่อทำทั้ง Update และ Insert ในคำสั่งเดียว (Upsert)
                     batchSql.AppendLine($@"
-                IF EXISTS (SELECT 1 FROM Ms_ProductSalesTax WHERE Product = '{product}')
-                BEGIN
-                    UPDATE Ms_ProductSalesTax SET 
-                        Country = '{country}',
-                        TaxCategory = '{row["TaxCategory"]}',
-                        TaxClassification = '{row["TaxClassification"]}',
-                        UpdateDate = GETDATE()
-                    WHERE Product = '{product}';
-                END
-                ELSE
-                BEGIN
-                    INSERT INTO Ms_ProductSalesTax (Product, Country, TaxCategory, TaxClassification, UpdateDate)
-                    VALUES ('{product}', '{country}', '{row["TaxCategory"]}', '{row["TaxClassification"]}', GETDATE());
-                END");
+                    IF EXISTS (SELECT 1 FROM Ms_ProductSalesTax WHERE Product = '{product}')
+                    BEGIN
+                        UPDATE Ms_ProductSalesTax SET 
+                            Country = '{country}',
+                            TaxCategory = '{row["TaxCategory"]}',
+                            TaxClassification = '{row["TaxClassification"]}',
+                            UpdateDate = GETDATE()
+                        WHERE Product = '{product}';
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO Ms_ProductSalesTax (Product, Country, TaxCategory, TaxClassification, UpdateDate)
+                        VALUES ('{product}', '{country}', '{row["TaxCategory"]}', '{row["TaxClassification"]}', GETDATE());
+                    END");
 
                     rowCount++;
 
@@ -560,27 +582,27 @@ namespace BIS_INTERFACE_BC
 
                     // 3. ใช้ SQL Upsert Logic (IF EXISTS)
                     batchSql.AppendLine($@"
-                IF EXISTS (SELECT 1 FROM Ms_ProductStorage WHERE Product = '{product}')
-                BEGIN
-                    UPDATE Ms_ProductStorage SET 
-                        StorageCondition = '{row["StorageConditions"]}',
-                        TemperatureCondition = '{row["TemperatureConditionInd"]}',
-                        MinRemainingShelfLife = {minShelfLife},
-                        TotalShelfLife = {totalShelfLife},
-                        BaseUnit = '{row["BaseUnit"]}',
-                        UpdateDate = GETDATE()
-                    WHERE Product = '{product}';
-                END
-                ELSE
-                BEGIN
-                    INSERT INTO Ms_ProductStorage (
-                        Product, StorageCondition, TemperatureCondition, 
-                        MinRemainingShelfLife, TotalShelfLife, BaseUnit, UpdateDate
-                    ) VALUES (
-                        '{product}', '{row["StorageConditions"]}', '{row["TemperatureConditionInd"]}', 
-                        {minShelfLife}, {totalShelfLife}, '{row["BaseUnit"]}', GETDATE()
-                    );
-                END");
+                    IF EXISTS (SELECT 1 FROM Ms_ProductStorage WHERE Product = '{product}')
+                    BEGIN
+                        UPDATE Ms_ProductStorage SET 
+                            StorageCondition = '{row["StorageConditions"]}',
+                            TemperatureCondition = '{row["TemperatureConditionInd"]}',
+                            MinRemainingShelfLife = {minShelfLife},
+                            TotalShelfLife = {totalShelfLife},
+                            BaseUnit = '{row["BaseUnit"]}',
+                            UpdateDate = GETDATE()
+                        WHERE Product = '{product}';
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO Ms_ProductStorage (
+                            Product, StorageCondition, TemperatureCondition, 
+                            MinRemainingShelfLife, TotalShelfLife, BaseUnit, UpdateDate
+                        ) VALUES (
+                            '{product}', '{row["StorageConditions"]}', '{row["TemperatureConditionInd"]}', 
+                            {minShelfLife}, {totalShelfLife}, '{row["BaseUnit"]}', GETDATE()
+                        );
+                    END");
 
                     rowCount++;
 
@@ -637,27 +659,27 @@ namespace BIS_INTERFACE_BC
 
                     // 3. ใช้ SQL Logic แบบ Upsert โดยเช็ค Composite Key (Product + AlternativeUnit)
                     batchSql.AppendLine($@"
-                IF EXISTS (SELECT 1 FROM Ms_ProductUnitsOfMeasure WHERE Product = '{product}' AND AlternativeUnit = '{altUnit}')
-                BEGIN
-                    UPDATE Ms_ProductUnitsOfMeasure SET 
-                        QuantityDenominator = {denominator},
-                        QuantityNumerator = {numerator},
-                        BaseUnit = '{row["BaseUnit"]}',
-                        GrossWeight = {grossWeight},
-                        WeightUnit = '{row["WeightUnit"]}',
-                        UpdateDate = GETDATE()
-                    WHERE Product = '{product}' AND AlternativeUnit = '{altUnit}';
-                END
-                ELSE
-                BEGIN
-                    INSERT INTO Ms_ProductUnitsOfMeasure (
-                        Product, AlternativeUnit, QuantityDenominator, QuantityNumerator, 
-                        BaseUnit, GrossWeight, WeightUnit, UpdateDate
-                    ) VALUES (
-                        '{product}', '{altUnit}', {denominator}, {numerator}, 
-                        '{row["BaseUnit"]}', {grossWeight}, '{row["WeightUnit"]}', GETDATE()
-                    );
-                END");
+                    IF EXISTS (SELECT 1 FROM Ms_ProductUnitsOfMeasure WHERE Product = '{product}' AND AlternativeUnit = '{altUnit}')
+                    BEGIN
+                        UPDATE Ms_ProductUnitsOfMeasure SET 
+                            QuantityDenominator = {denominator},
+                            QuantityNumerator = {numerator},
+                            BaseUnit = '{row["BaseUnit"]}',
+                            GrossWeight = {grossWeight},
+                            WeightUnit = '{row["WeightUnit"]}',
+                            UpdateDate = GETDATE()
+                        WHERE Product = '{product}' AND AlternativeUnit = '{altUnit}';
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO Ms_ProductUnitsOfMeasure (
+                            Product, AlternativeUnit, QuantityDenominator, QuantityNumerator, 
+                            BaseUnit, GrossWeight, WeightUnit, UpdateDate
+                        ) VALUES (
+                            '{product}', '{altUnit}', {denominator}, {numerator}, 
+                            '{row["BaseUnit"]}', {grossWeight}, '{row["WeightUnit"]}', GETDATE()
+                        );
+                    END");
 
                     rowCount++;
 
@@ -755,44 +777,44 @@ namespace BIS_INTERFACE_BC
                     }
 
                     batchSql.AppendLine($@"
-                IF EXISTS (SELECT 1 FROM Ms_BusinessPartner WHERE BusinessPartner = '{bp}')
-                BEGIN
-                    UPDATE Ms_BusinessPartner SET 
-                        Customer = '{row["Customer"]}', 
-                        Supplier = '{row["Supplier"]}',
-                        AcademicTitle = '{row["AcademicTitle"]}', 
-                        BusinessPartnerCategory = '{row["BusinessPartnerCategory"]}',
-                        BusinessPartnerGrouping = '{row["BusinessPartnerGrouping"]}', 
-                        BusinessPartnerName = '{bpName}',
-                        FirstName = '{firstName}', 
-                        LastName = '{lastName}',
-                        LastChangeDate = '{formattedLastChange}',
-                        OrganizationBPName1 = '{org1}', 
-                        OrganizationBPName2 = '{org2}',
-                        SearchTerm1 = '{searchTerm1}', 
-                        SearchTerm2 = '{searchTerm2}',
-                        Etag = '{row["Etag"]}', 
-                        CreationDate = '{formattedCreation}',
-                        BusinessPartnerFull = '{bpFull}',
-                        PersonNumber = '{row["PersonNumber"]}'
-                    WHERE BusinessPartner = '{bp}';
-                END
-                ELSE
-                BEGIN
-                    INSERT INTO Ms_BusinessPartner (
-                        [BusinessPartner], [Customer], [Supplier], [AcademicTitle], [AuthorizationGroup], 
-                        [BusinessPartnerCategory], [BusinessPartnerFull], [BusinessPartnerGrouping], 
-                        [BusinessPartnerName], [FirstName], [LastChangeDate], [OrganizationBPName1], 
-                        [OrganizationBPName2], [SearchTerm1], [SearchTerm2], [Etag], [CreationDate], 
-                        [LastName], [PersonNumber]
-                    ) VALUES (
-                        '{bp}', '{row["Customer"]}', '{row["Supplier"]}', '{row["AcademicTitle"]}', '{row["AuthorizationGroup"]}', 
-                        '{row["BusinessPartnerCategory"]}', '{bpFull}', '{row["BusinessPartnerGrouping"]}', 
-                        '{bpName}', '{firstName}', '{formattedLastChange}', '{org1}', 
-                        '{org2}', '{searchTerm1}', '{searchTerm2}', '{row["Etag"]}', '{formattedCreation}', 
-                        '{lastName}', '{row["PersonNumber"]}'
-                    );
-                END");
+                    IF EXISTS (SELECT 1 FROM Ms_BusinessPartner WHERE BusinessPartner = '{bp}')
+                    BEGIN
+                        UPDATE Ms_BusinessPartner SET 
+                            Customer = '{row["Customer"]}', 
+                            Supplier = '{row["Supplier"]}',
+                            AcademicTitle = '{row["AcademicTitle"]}', 
+                            BusinessPartnerCategory = '{row["BusinessPartnerCategory"]}',
+                            BusinessPartnerGrouping = '{row["BusinessPartnerGrouping"]}', 
+                            BusinessPartnerName = N'{bpName}',
+                            FirstName = '{firstName}', 
+                            LastName = '{lastName}',
+                            LastChangeDate = '{formattedLastChange}',
+                            OrganizationBPName1 = '{org1}', 
+                            OrganizationBPName2 = '{org2}',
+                            SearchTerm1 = '{searchTerm1}', 
+                            SearchTerm2 = '{searchTerm2}',
+                            Etag = '{row["Etag"]}', 
+                            CreationDate = '{formattedCreation}',
+                            BusinessPartnerFull = '{bpFull}',
+                            PersonNumber = '{row["PersonNumber"]}'
+                        WHERE BusinessPartner = '{bp}';
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO Ms_BusinessPartner (
+                            [BusinessPartner], [Customer], [Supplier], [AcademicTitle], [AuthorizationGroup], 
+                            [BusinessPartnerCategory], [BusinessPartnerFull], [BusinessPartnerGrouping], 
+                            [BusinessPartnerName], [FirstName], [LastChangeDate], [OrganizationBPName1], 
+                            [OrganizationBPName2], [SearchTerm1], [SearchTerm2], [Etag], [CreationDate], 
+                            [LastName], [PersonNumber]
+                        ) VALUES (
+                            '{bp}', '{row["Customer"]}', '{row["Supplier"]}', '{row["AcademicTitle"]}', '{row["AuthorizationGroup"]}', 
+                            '{row["BusinessPartnerCategory"]}', N'{bpFull}', '{row["BusinessPartnerGrouping"]}', 
+                            '{bpName}', N'{firstName}', '{formattedLastChange}', '{org1}', 
+                            '{org2}', '{searchTerm1}', '{searchTerm2}', '{row["Etag"]}', '{formattedCreation}', 
+                            '{lastName}', '{row["PersonNumber"]}'
+                        );
+                    END");
 
                     rowCount++;
 
@@ -892,13 +914,13 @@ namespace BIS_INTERFACE_BC
                     UPDATE Ms_BusinessPartnerAddress SET 
                         ValidityStartDate = '{formattedValidityStartDate}', ValidityEndDate = '{formattedValidityEndDate}',
                         AuthorizationGroup = '{row["AuthorizationGroup"]}', AddressUUID = '{row["AddressUUID"]}',
-                        AdditionalStreetPrefixName = '{streetPrefix}', AdditionalStreetSuffixName = '{streetSuffix}',
-                        FullName = '{fullName}', HomeCityName = '{row["HomeCityName"]}',
+                        AdditionalStreetPrefixName = '{streetPrefix}', AdditionalStreetSuffixName = N'{streetSuffix}',
+                        FullName = N'{fullName}', HomeCityName = '{row["HomeCityName"]}',
                         HouseNumber = '{houseNo}', HouseNumberSupplementText = '{row["HouseNumberSupplementText"]}',
-                        CareOfName = '{careOf}', CityName = '{cityName}',
-                        District = '{row["District"]}', PostCode = '{row["PostalCode"]}',
+                        CareOfName = '{careOf}', CityName = N'{cityName}',
+                        District = N'{row["District"]}', PostCode = '{row["PostalCode"]}',
                         Country = '{row["Country"]}', Person = '{row["Person"]}',
-                        StreetPrefixName = '{row["StreetPrefixName"].ToString().Replace("'", "''")}', UpdateDate = GETDATE()
+                        StreetPrefixName = N'{row["StreetPrefixName"].ToString().Replace("'", "''")}', UpdateDate = GETDATE()
                     WHERE BusinessPartner = '{bp}' AND AddressID = '{addrId}';
                 END
                 ELSE
@@ -1109,9 +1131,9 @@ namespace BIS_INTERFACE_BC
                     UPDATE Ms_BusinnessPartnerCustomer SET 
                         AuthorizationGroup = '{row["AuthorizationGroup"]}',
                         CustomerAccountGroup = '{row["CustomerAccountGroup"]}',
-                        CustomerFullName = '{customerFullName}',
-                        BPCustomerFullName = '{bpCustomerFullName}',
-                        CustomerName = '{customerName}',
+                        CustomerFullName = N'{customerFullName}',
+                        BPCustomerFullName = N'{bpCustomerFullName}',
+                        CustomerName = N'{customerName}',
                         DeliveryIsBlocked = '{row["DeliveryIsBlocked"]}',
                         TaxNumber3 = '{taxNumber3}',
                         UpdateDate = GETDATE()
@@ -2225,8 +2247,2159 @@ namespace BIS_INTERFACE_BC
             }
         }
 
-    }
+        private static async Task BusinessPartnerCustSalesSupplierCompany(string sText)
+        {
+            var batchSql = new StringBuilder();
+            int rowCount = 0;
+            string _url = "";
 
+            try
+            {
+                var helper = new ODataHelper();
+
+                _url = SQLConnect.GetStringValue(@"
+            SELECT DataSyntax
+            FROM Setting_SyncData
+            WHERE DataType = 'BusinessPartnerCustSalesSupplierCompany'
+              AND IsActive = 1
+              AND DataSource = 'OData'
+        ", "dbDW");
+
+                DataTable dt = await helper.FetchAllODataAsync(_url, _USERNAME, _PASSWORD);
+                if (dt.Rows.Count == 0) return;
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    string supplier = row["Supplier"].ToString();
+                    string companyCode = row["CompanyCode"].ToString();
+
+                    string authGroup = row["AuthorizationGroup"].ToString();
+                    string companyName = row["CompanyCodeName"].ToString().Replace("'", "''");
+                    string paymentBlock = row["PaymentBlockingReason"].ToString();
+
+                    string blockedPosting = row["SupplierIsBlockedForPosting"].ToString() == "True" ? "1" : "0";
+
+                    string accountingClerk = row["AccountingClerk"].ToString();
+                    string clerkFax = row["AccountingClerkFaxNumber"].ToString();
+                    string clerkPhone = row["AccountingClerkPhoneNumber"].ToString();
+
+                    string supplierClerk = row["SupplierClerk"].ToString();
+                    string supplierClerkUrl = row["SupplierClerkURL"].ToString().Replace("'", "''");
+
+                    string paymentMethod = row["PaymentMethodsList"].ToString();
+                    string paymentReason = row["PaymentReason"].ToString();
+                    string paymentTerms = row["PaymentTerms"].ToString();
+
+                    string clearCS = row["ClearCustomerSupplier"].ToString() == "True" ? "1" : "0";
+                    string localProcess = row["IsToBeLocallyProcessed"].ToString() == "True" ? "1" : "0";
+                    string paySeparately = row["ItemIsToBePaidSeparately"].ToString() == "True" ? "1" : "0";
+                    string payEDI = row["PaymentIsToBeSentByEDI"].ToString() == "True" ? "1" : "0";
+
+                    string houseBank = row["HouseBank"].ToString();
+                    string checkDays = row["CheckPaidDurationInDays"].ToString();
+                    string currency = row["Currency"].ToString();
+                    string billLimit = row["BillOfExchLmtAmtInCoCodeCrcy"].ToString();
+
+                    string clerkIdBySupplier = row["SupplierClerkIDBySupplier"].ToString();
+                    string reconAccount = row["ReconciliationAccount"].ToString();
+                    string interestCode = row["InterestCalculationCode"].ToString();
+                    string interestFreq = row["IntrstCalcFrequencyInMonths"].ToString();
+
+                    // ===== Date (NULL-safe) =====
+                    string interestCalcDate =
+                        string.IsNullOrEmpty(row["InterestCalculationDate"].ToString())
+                        ? "NULL"
+                        : $"'{row["InterestCalculationDate"]}'";
+
+                    string supplierCertDate =
+                        string.IsNullOrEmpty(row["SupplierCertificationDate"].ToString())
+                        ? "NULL"
+                        : $"'{row["SupplierCertificationDate"]}'";
+
+                    string headOffice = row["SupplierHeadOffice"].ToString();
+                    string altPayee = row["AlternativePayee"].ToString();
+                    string layoutRule = row["LayoutSortingRule"].ToString();
+                    string aparGroup = row["APARToleranceGroup"].ToString();
+
+                    string accountNote = row["SupplierAccountNote"].ToString().Replace("'", "''");
+                    string whtCountry = row["WithholdingTaxCountry"].ToString();
+
+                    string deletionInd = row["DeletionIndicator"].ToString() == "True" ? "1" : "0";
+                    string cashPlanGroup = row["CashPlanningGroup"].ToString();
+                    string checkDuplicate = row["IsToBeCheckedForDuplicates"].ToString() == "True" ? "1" : "0";
+                    string minorityGroup = row["MinorityGroup"].ToString();
+                    string supplierAccGroup = row["SupplierAccountGroup"].ToString();
+
+                    batchSql.AppendLine($@"
+            IF EXISTS (
+                SELECT 1 FROM Ms_BusinessPartnerCustSalesSupplierCompany
+                WHERE Supplier = '{supplier}'
+                  AND CompanyCode = '{companyCode}'
+            )
+            BEGIN
+                UPDATE Ms_BusinessPartnerCustSalesSupplierCompany SET
+                    AuthorizationGroup = '{authGroup}',
+                    CompanyCodeName = '{companyName}',
+                    PaymentBlockingReason = '{paymentBlock}',
+                    SupplierIsBlockedForPosting = {blockedPosting},
+                    AccountingClerk = '{accountingClerk}',
+                    AccountingClerkFaxNumber = '{clerkFax}',
+                    AccountingClerkPhoneNumber = '{clerkPhone}',
+                    SupplierClerk = N'{supplierClerk}',
+                    SupplierClerkURL = '{supplierClerkUrl}',
+                    PaymentMethodsList = '{paymentMethod}',
+                    PaymentReason = '{paymentReason}',
+                    PaymentTerms = '{paymentTerms}',
+                    ClearCustomerSupplier = {clearCS},
+                    IsToBeLocallyProcessed = {localProcess},
+                    ItemIsToBePaidSeparately = {paySeparately},
+                    PaymentIsToBeSentByEDI = {payEDI},
+                    HouseBank = '{houseBank}',
+                    CheckPaidDurationInDays = {checkDays},
+                    Currency = '{currency}',
+                    BillOfExchLmtAmtInCoCodeCrcy = {billLimit},
+                    SupplierClerkIDBySupplier = '{clerkIdBySupplier}',
+                    ReconciliationAccount = '{reconAccount}',
+                    InterestCalculationCode = '{interestCode}',
+                    InterestCalculationDate = {interestCalcDate},
+                    IntrstCalcFrequencyInMonths = {interestFreq},
+                    SupplierHeadOffice = '{headOffice}',
+                    AlternativePayee = '{altPayee}',
+                    LayoutSortingRule = '{layoutRule}',
+                    APARToleranceGroup = '{aparGroup}',
+                    SupplierCertificationDate = {supplierCertDate},
+                    SupplierAccountNote = '{accountNote}',
+                    WithholdingTaxCountry = '{whtCountry}',
+                    DeletionIndicator = {deletionInd},
+                    CashPlanningGroup = '{cashPlanGroup}',
+                    IsToBeCheckedForDuplicates = {checkDuplicate},
+                    MinorityGroup = '{minorityGroup}',
+                    SupplierAccountGroup = '{supplierAccGroup}',
+                    UpdateDate = GETDATE()
+                WHERE Supplier = '{supplier}'
+                  AND CompanyCode = '{companyCode}';
+            END
+            ELSE
+            BEGIN
+                INSERT INTO Ms_BusinessPartnerCustSalesSupplierCompany (
+                    Supplier, CompanyCode,
+                    AuthorizationGroup, CompanyCodeName, PaymentBlockingReason,
+                    SupplierIsBlockedForPosting,
+                    AccountingClerk, AccountingClerkFaxNumber, AccountingClerkPhoneNumber,
+                    SupplierClerk, SupplierClerkURL,
+                    PaymentMethodsList, PaymentReason, PaymentTerms,
+                    ClearCustomerSupplier, IsToBeLocallyProcessed,
+                    ItemIsToBePaidSeparately, PaymentIsToBeSentByEDI,
+                    HouseBank, CheckPaidDurationInDays, Currency,
+                    BillOfExchLmtAmtInCoCodeCrcy,
+                    SupplierClerkIDBySupplier, ReconciliationAccount,
+                    InterestCalculationCode, InterestCalculationDate,
+                    IntrstCalcFrequencyInMonths,
+                    SupplierHeadOffice, AlternativePayee, LayoutSortingRule,
+                    APARToleranceGroup, SupplierCertificationDate,
+                    SupplierAccountNote, WithholdingTaxCountry,
+                    DeletionIndicator, CashPlanningGroup,
+                    IsToBeCheckedForDuplicates, MinorityGroup, SupplierAccountGroup,
+                    UpdateDate
+                ) VALUES (
+                    '{supplier}', '{companyCode}',
+                    '{authGroup}', '{companyName}', '{paymentBlock}',
+                    {blockedPosting},
+                    '{accountingClerk}', '{clerkFax}', '{clerkPhone}',
+                    N'{supplierClerk}', '{supplierClerkUrl}',
+                    '{paymentMethod}', '{paymentReason}', '{paymentTerms}',
+                    {clearCS}, {localProcess},
+                    {paySeparately}, {payEDI},
+                    '{houseBank}', {checkDays}, '{currency}',
+                    {billLimit},
+                    '{clerkIdBySupplier}', '{reconAccount}',
+                    '{interestCode}', {interestCalcDate},
+                    {interestFreq},
+                    '{headOffice}', '{altPayee}', '{layoutRule}',
+                    '{aparGroup}', {supplierCertDate},
+                    '{accountNote}', '{whtCountry}',
+                    {deletionInd}, '{cashPlanGroup}',
+                    {checkDuplicate}, '{minorityGroup}', '{supplierAccGroup}',
+                    GETDATE()
+                );
+            END
+            ");
+
+                    rowCount++;
+
+                    if (rowCount % 100 == 0)
+                    {
+                        SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+                        batchSql.Clear();
+                    }
+                }
+
+                if (batchSql.Length > 0)
+                    SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+
+                Console.WriteLine($"Ms_BusinessPartnerCustSalesSupplierCompany : Sync Successful ({rowCount})");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+
+        private static async Task MaterialStockInAcctMod(string sText)
+        {
+            var batchSql = new StringBuilder();
+            int rowCount = 0;
+            string _url = "";
+
+            try
+            {
+                var helper = new ODataHelper();
+
+                // 1. ดึง URL จาก Setting
+                _url = SQLConnect.GetStringValue(@" SELECT [DataSyntax] FROM [Setting_SyncData] WHERE DataType = 'MaterialStockInAcctMod' AND IsActive = 1 AND DataSource = 'OData'", "dbDW");
+
+                // 2. ดึงข้อมูล OData → DataTable
+                DataTable dt = await helper.FetchAllODataAsync(_url, _USERNAME, _PASSWORD);
+                if (dt.Rows.Count == 0) return;
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    // ===== Key fields (ตาม OData ID) =====
+                    string material = row["Material"].ToString().Replace("'", "''");
+                    string plant = row["Plant"].ToString();
+                    string storageLocation = row["StorageLocation"].ToString();
+                    string batch = row["Batch"].ToString().Replace("'", "''");
+                    string supplier = row["Supplier"].ToString();
+                    string customer = row["Customer"].ToString();
+                    string wbsInternalId = row["WBSElementInternalID"].ToString();
+                    string sdDocument = row["SDDocument"].ToString();
+                    string sdDocumentItem = row["SDDocumentItem"].ToString();
+                    string specialStockType = row["InventorySpecialStockType"].ToString();
+                    string stockType = row["InventoryStockType"].ToString();
+
+                    // ===== Value fields =====
+                    string baseUnit = row["MaterialBaseUnit"].ToString();
+                    string stockQty = row["MatlWrhsStkQtyInMatlBaseUnit"].ToString();
+
+                    batchSql.AppendLine($@"
+                    IF EXISTS (
+                        SELECT 1 FROM MS_MaterialStockInAcctMod
+                        WHERE Material = '{material}'
+                          AND Plant = '{plant}'
+                          AND StorageLocation = '{storageLocation}'
+                          AND Batch = '{batch}'
+                          AND Supplier = '{supplier}'
+                          AND Customer = '{customer}'
+                          AND WBSElementInternalID = '{wbsInternalId}'
+                          AND SDDocument = '{sdDocument}'
+                          AND SDDocumentItem = '{sdDocumentItem}'
+                          AND InventorySpecialStockType = '{specialStockType}'
+                          AND InventoryStockType = '{stockType}'
+                    )
+                    BEGIN
+                        UPDATE MS_MaterialStockInAcctMod SET
+                            MaterialBaseUnit = '{baseUnit}',
+                            MatlWrhsStkQtyInMatlBaseUnit = {stockQty},
+                            UpdateDate = GETDATE()
+                        WHERE Material = '{material}'
+                          AND Plant = '{plant}'
+                          AND StorageLocation = '{storageLocation}'
+                          AND Batch = '{batch}'
+                          AND Supplier = '{supplier}'
+                          AND Customer = '{customer}'
+                          AND WBSElementInternalID = '{wbsInternalId}'
+                          AND SDDocument = '{sdDocument}'
+                          AND SDDocumentItem = '{sdDocumentItem}'
+                          AND InventorySpecialStockType = '{specialStockType}'
+                          AND InventoryStockType = '{stockType}';
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO MS_MaterialStockInAcctMod (
+                            Material,
+                            Plant,
+                            StorageLocation,
+                            Batch,
+                            Supplier,
+                            Customer,
+                            WBSElementInternalID,
+                            SDDocument,
+                            SDDocumentItem,
+                            InventorySpecialStockType,
+                            InventoryStockType,
+                            MaterialBaseUnit,
+                            MatlWrhsStkQtyInMatlBaseUnit,
+                            UpdateDate
+                        ) VALUES (
+                            '{material}',
+                            '{plant}',
+                            '{storageLocation}',
+                            '{batch}',
+                            '{supplier}',
+                            '{customer}',
+                            '{wbsInternalId}',
+                            '{sdDocument}',
+                            '{sdDocumentItem}',
+                            '{specialStockType}',
+                            '{stockType}',
+                            '{baseUnit}',
+                            {stockQty},
+                            GETDATE()
+                        );
+                    END
+                    ");
+
+                    rowCount++;
+
+                    // batch ทีละ 100
+                    if (rowCount % 100 == 0)
+                    {
+                        SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+                        batchSql.Clear();
+                    }
+                }
+
+                // batch สุดท้าย
+                if (batchSql.Length > 0)
+                {
+                    SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+                }
+
+                // log success
+                SQLConnect.Updatedata(
+                    "INSERT INTO Log_Status(Process,Status,LogDate) VALUES ('MaterialStockInAcctMod','Successful',GETDATE())", "dbDW"
+                );
+
+                Console.WriteLine($"MaterialStockInAcctMod : Sync Successful ({rowCount} rows)");
+            }
+            catch (Exception e)
+            {
+                string errMsg = e.Message.Replace("'", "''");
+                SQLConnect.Updatedata($@"INSERT INTO Log_Status(Process,Status,LogDate,LogDescription)VALUES ('MaterialStockInAcctMod','Fail',GETDATE(),'{errMsg}')", "dbDW");
+
+                Console.WriteLine(e.Message);
+            }
+        }
+        private static async Task PurchaseOrder(string sText)
+        {
+            var batchSql = new StringBuilder();
+            int rowCount = 0;
+            string _url = "";
+
+            try
+            {
+                var helper = new ODataHelper();
+                _url = SQLConnect.GetStringValue(@"SELECT [DataSyntax] FROM [Setting_SyncData] WHERE DataType = 'PurchaseOrder' AND IsActive = 1 AND DataSource = 'OData'", "dbDW");
+                DataTable dt = await helper.FetchAllODataAsync(_url, _USERNAME, _PASSWORD);
+                if (dt.Rows.Count == 0) return;
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    string purchaseOrder = row["PurchaseOrder"].ToString();
+                    string companyCode = row["CompanyCode"].ToString();
+                    string poType = row["PurchaseOrderType"].ToString();
+                    string status = row["PurchasingProcessingStatus"].ToString();
+                    string createdBy = row["CreatedByUser"].ToString().Replace("'", "''");
+                    string supplier = row["Supplier"].ToString();
+                    string language = row["Language"].ToString();
+                    string paymentTerms = row["PaymentTerms"].ToString();
+                    string purchasingOrg = row["PurchasingOrganization"].ToString();
+                    string purchasingGroup = row["PurchasingGroup"].ToString();
+                    string documentCurrency = row["DocumentCurrency"].ToString();
+                    string exchangeRate = row["ExchangeRate"].ToString();
+                    string exchangeRateIsFixed = row["ExchangeRateIsFixed"].ToString() == "True" ? "1" : "0";
+                    string creationDate = row["CreationDate"].ToString();
+                    string lastChangeDateTime = row["LastChangeDateTime"].ToString();
+                    string poDate = row["PurchaseOrderDate"].ToString();
+                    string incoterms = row["IncotermsClassification"].ToString();
+                    string incotermsLoc1 = row["IncotermsLocation1"].ToString().Replace("'", "''");
+                    string incotermsLoc2 = row["IncotermsLocation2"].ToString().Replace("'", "''");
+                    string addressName = row["AddressName"].ToString().Replace("'", "''");
+                    string addressStreet = row["AddressStreetName"].ToString().Replace("'", "''");
+                    string city = row["AddressCityName"].ToString().Replace("'", "''");
+                    string postalCode = row["AddressPostalCode"].ToString();
+                    string country = row["AddressCountry"].ToString();
+                    string phone = row["AddressPhoneNumber"].ToString();
+                    string releaseNotCompleted = row["ReleaseIsNotCompleted"].ToString() == "True" ? "1" : "0";
+                    string completenessStatus = row["PurchasingCompletenessStatus"].ToString() == "True" ? "1" : "0";
+
+                    batchSql.AppendLine($@"
+                    IF EXISTS (
+                        SELECT 1 FROM MS_PurchaseOrder
+                        WHERE PurchaseOrder = '{purchaseOrder}'
+                    )
+                    BEGIN
+                        UPDATE MS_PurchaseOrder SET
+                            CompanyCode = '{companyCode}',
+                            PurchaseOrderType = '{poType}',
+                            PurchasingProcessingStatus = '{status}',
+                            CreatedByUser = '{createdBy}',
+                            CreationDate = '{creationDate}',
+                            LastChangeDateTime = '{lastChangeDateTime}',
+                            Supplier = '{supplier}',
+                            Language = '{language}',
+                            PaymentTerms = '{paymentTerms}',
+                            PurchasingOrganization = '{purchasingOrg}',
+                            PurchasingGroup = '{purchasingGroup}',
+                            PurchaseOrderDate = '{poDate}',
+                            DocumentCurrency = '{documentCurrency}',
+                            ExchangeRate = {exchangeRate},
+                            ExchangeRateIsFixed = {exchangeRateIsFixed},
+                            IncotermsClassification = '{incoterms}',
+                            IncotermsLocation1 = '{incotermsLoc1}',
+                            IncotermsLocation2 = '{incotermsLoc2}',
+                            AddressName = '{addressName}',
+                            AddressStreetName = '{addressStreet}',
+                            AddressCityName = '{city}',
+                            AddressPostalCode = '{postalCode}',
+                            AddressCountry = '{country}',
+                            AddressPhoneNumber = '{phone}',
+                            ReleaseIsNotCompleted = {releaseNotCompleted},
+                            PurchasingCompletenessStatus = {completenessStatus},
+                            UpdateDate = GETDATE()
+                        WHERE PurchaseOrder = '{purchaseOrder}';
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO MS_PurchaseOrder (
+                            PurchaseOrder,
+                            CompanyCode,
+                            PurchaseOrderType,
+                            PurchasingProcessingStatus,
+                            CreatedByUser,
+                            CreationDate,
+                            LastChangeDateTime,
+                            Supplier,
+                            Language,
+                            PaymentTerms,
+                            PurchasingOrganization,
+                            PurchasingGroup,
+                            PurchaseOrderDate,
+                            DocumentCurrency,
+                            ExchangeRate,
+                            ExchangeRateIsFixed,
+                            IncotermsClassification,
+                            IncotermsLocation1,
+                            IncotermsLocation2,
+                            AddressName,
+                            AddressStreetName,
+                            AddressCityName,
+                            AddressPostalCode,
+                            AddressCountry,
+                            AddressPhoneNumber,
+                            ReleaseIsNotCompleted,
+                            PurchasingCompletenessStatus,
+                            UpdateDate
+                        ) VALUES (
+                            '{purchaseOrder}',
+                            '{companyCode}',
+                            '{poType}',
+                            '{status}',
+                            '{createdBy}',
+                            '{creationDate}',
+                            '{lastChangeDateTime}',
+                            '{supplier}',
+                            '{language}',
+                            '{paymentTerms}',
+                            '{purchasingOrg}',
+                            '{purchasingGroup}',
+                            '{poDate}',
+                            '{documentCurrency}',
+                            {exchangeRate},
+                            {exchangeRateIsFixed},
+                            '{incoterms}',
+                            '{incotermsLoc1}',
+                            '{incotermsLoc2}',
+                            '{addressName}',
+                            '{addressStreet}',
+                            '{city}',
+                            '{postalCode}',
+                            '{country}',
+                            '{phone}',
+                            {releaseNotCompleted},
+                            {completenessStatus},
+                            GETDATE()
+                        );
+                    END
+                    ");
+                    rowCount++;
+                    if (rowCount % 100 == 0)
+                    {
+                        SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+                        batchSql.Clear();
+                    }
+                }
+                if (batchSql.Length > 0)
+                {
+                    SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+                }
+
+                SQLConnect.Updatedata("INSERT INTO Log_Status(Process,Status,LogDate) VALUES ('PurchaseOrder','Successful',GETDATE())","dbDW");
+
+                Console.WriteLine($"PurchaseOrder : Sync Successful ({rowCount} rows)");
+            }
+            catch (Exception ex)
+            {
+                string errMsg = ex.Message.Replace("'", "''");
+                SQLConnect.Updatedata($@"INSERT INTO Log_Status(Process,Status,LogDate,LogDescription)VALUES ('PurchaseOrder','Fail',GETDATE(),'{errMsg}')", "dbDW");
+
+                Console.WriteLine(ex.Message);
+            }
+        }
+
+        private static async Task PurchaseOrderItem(string sText)
+        {
+            var batchSql = new StringBuilder();
+            int rowCount = 0;
+            string _url = "";
+
+            try
+            {
+                var helper = new ODataHelper();
+
+                _url = SQLConnect.GetStringValue(@"SELECT DataSyntax FROM Setting_SyncData WHERE DataType = 'PurchaseOrderItem' AND IsActive = 1 AND DataSource = 'OData' ", "dbDW");
+
+                DataTable dt = await helper.FetchAllODataAsync(_url, _USERNAME, _PASSWORD);
+                if (dt.Rows.Count == 0) return;
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    string po = row["PurchaseOrder"].ToString();
+                    string poItem = row["PurchaseOrderItem"].ToString();
+                    string delCode = row["PurchasingDocumentDeletionCode"].ToString();
+                    string itemText = row["PurchaseOrderItemText"].ToString().Replace("'", "''");
+                    string plant = row["Plant"].ToString();
+                    string storage = row["StorageLocation"].ToString();
+                    string matGroup = row["MaterialGroup"].ToString();
+                    string infoRec = row["PurchasingInfoRecord"].ToString();
+                    string supplierMat = row["SupplierMaterialNumber"].ToString();
+                    string poQty = row["OrderQuantity"].ToString();
+                    string poUom = row["PurchaseOrderQuantityUnit"].ToString();
+                    string priceUom = row["OrderPriceUnit"].ToString();
+                    string priceN = row["OrderPriceUnitToOrderUnitNmrtr"].ToString();
+                    string priceD = row["OrdPriceUnitToOrderUnitDnmntr"].ToString();
+                    string currency = row["DocumentCurrency"].ToString();
+                    string netPrice = row["NetPriceAmount"].ToString();
+                    string netQty = row["NetPriceQuantity"].ToString();
+                    string taxCode = row["TaxCode"].ToString();
+                    string shipInst = row["ShippingInstruction"].ToString();
+                    string taxCountry = row["TaxCountry"].ToString();
+                    string valuationType = row["ValuationType"].ToString();
+                    string poItemCat = row["PurchaseOrderItemCategory"].ToString();
+                    string acctCat = row["AccountAssignmentCategory"].ToString();
+                    string pr = row["PurchaseRequisition"].ToString();
+                    string prItem = row["PurchaseRequisitionItem"].ToString();
+                    string reqName = row["RequisitionerName"].ToString();
+                    string material = row["Material"].ToString();
+                    string manuMat = row["ManufacturerMaterial"].ToString();
+                    string productType = row["ProductType"].ToString();
+                    string delName = row["DeliveryAddressName"].ToString().Replace("'", "''");
+                    string delFull = row["DeliveryAddressFullName"].ToString().Replace("'", "''");
+                    string delCity = row["DeliveryAddressCityName"].ToString().Replace("'", "''");
+                    string delPost = row["DeliveryAddressPostalCode"].ToString();
+                    string delCountry = row["DeliveryAddressCountry"].ToString();
+                    string dpType = row["DownPaymentType"].ToString();
+                    string dpPct = row["DownPaymentPercentageOfTotAmt"].ToString();
+                    string dpAmt = row["DownPaymentAmount"].ToString();
+                    string pricePrint = row["PriceIsToBePrinted"].ToString() == "True" ? "1" : "0";
+                    string overUnlimit = row["UnlimitedOverdeliveryIsAllowed"].ToString() == "True" ? "1" : "0";
+                    string completeDel = row["IsCompletelyDelivered"].ToString() == "True" ? "1" : "0";
+                    string finalInv = row["IsFinallyInvoiced"].ToString() == "True" ? "1" : "0";
+                    string grExp = row["GoodsReceiptIsExpected"].ToString() == "True" ? "1" : "0";
+                    string grNonVal = row["GoodsReceiptIsNonValuated"].ToString() == "True" ? "1" : "0";
+                    string invExp = row["InvoiceIsExpected"].ToString() == "True" ? "1" : "0";
+                    string invGr = row["InvoiceIsGoodsReceiptBased"].ToString() == "True" ? "1" : "0";
+                    string retItem = row["IsReturnsItem"].ToString() == "True" ? "1" : "0";
+                    string freeItem = row["PurchasingItemIsFreeOfCharge"].ToString() == "True" ? "1" : "0";
+                    string overPct = row["OverdelivTolrtdLmtRatioInPct"].ToString();
+                    string underPct = row["UnderdelivTolrtdLmtRatioInPct"].ToString();
+                    string taxDate = string.IsNullOrEmpty(row["TaxDeterminationDate"].ToString())
+                        ? "NULL"
+                        : $"'{row["TaxDeterminationDate"]}'";
+
+                    string dpDate = string.IsNullOrEmpty(row["DownPaymentDueDate"].ToString())
+                        ? "NULL"
+                        : $"'{row["DownPaymentDueDate"]}'";
+
+                    batchSql.AppendLine($@"
+                    IF EXISTS (
+                    SELECT 1 FROM Ms_PurchaseOrderItem
+                    WHERE PurchaseOrder = '{po}'
+                    AND PurchaseOrderItem = '{poItem}'
+                    )
+                    BEGIN
+                    UPDATE Ms_PurchaseOrderItem SET
+                    PurchasingDocumentDeletionCode = '{delCode}',
+                    PurchaseOrderItemText = N'{itemText}',
+                    Plant = '{plant}',
+                    StorageLocation = '{storage}',
+                    MaterialGroup = '{matGroup}',
+                    PurchasingInfoRecord = '{infoRec}',
+                    SupplierMaterialNumber = '{supplierMat}',
+                    OrderQuantity = {poQty},
+                    PurchaseOrderQuantityUnit = '{poUom}',
+                    OrderPriceUnit = '{priceUom}',
+                    OrderPriceUnitToOrderUnitNmrtr = {priceN},
+                    OrdPriceUnitToOrderUnitDnmntr = {priceD},
+                    DocumentCurrency = '{currency}',
+                    NetPriceAmount = {netPrice},
+                    NetPriceQuantity = {netQty},
+                    TaxCode = '{taxCode}',
+                    ShippingInstruction = '{shipInst}',
+                    TaxDeterminationDate = {taxDate},
+                    TaxCountry = '{taxCountry}',
+                    PriceIsToBePrinted = {pricePrint},
+                    OverdelivTolrtdLmtRatioInPct = {overPct},
+                    UnlimitedOverdeliveryIsAllowed = {overUnlimit},
+                    UnderdelivTolrtdLmtRatioInPct = {underPct},
+                    ValuationType = '{valuationType}',
+                    IsCompletelyDelivered = {completeDel},
+                    IsFinallyInvoiced = {finalInv},
+                    PurchaseOrderItemCategory = '{poItemCat}',
+                    AccountAssignmentCategory = '{acctCat}',
+                    GoodsReceiptIsExpected = {grExp},
+                    GoodsReceiptIsNonValuated = {grNonVal},
+                    InvoiceIsExpected = {invExp},
+                    InvoiceIsGoodsReceiptBased = {invGr},
+                    PurchaseRequisition = '{pr}',
+                    PurchaseRequisitionItem = '{prItem}',
+                    IsReturnsItem = {retItem},
+                    RequisitionerName = '{reqName}',
+                    Material = '{material}',
+                    ManufacturerMaterial = '{manuMat}',
+                    ProductType = '{productType}',
+                    DeliveryAddressName = '{delName}',
+                    DeliveryAddressFullName = '{delFull}',
+                    DeliveryAddressCityName = N'{delCity}',
+                    DeliveryAddressPostalCode = '{delPost}',
+                    DeliveryAddressCountry = '{delCountry}',
+                    DownPaymentType = '{dpType}',
+                    DownPaymentPercentageOfTotAmt = {dpPct},
+                    DownPaymentAmount = {dpAmt},
+                    DownPaymentDueDate = {dpDate},
+                    PurchasingItemIsFreeOfCharge = {freeItem},
+                    UpdateDate = GETDATE()
+                    WHERE PurchaseOrder = '{po}'
+                    AND PurchaseOrderItem = '{poItem}';
+                    END
+                    ELSE
+                   BEGIN
+                   INSERT INTO Ms_PurchaseOrderItem (
+                    PurchaseOrder, PurchaseOrderItem, PurchasingDocumentDeletionCode,
+                    PurchaseOrderItemText, Plant, StorageLocation, MaterialGroup,
+                    PurchasingInfoRecord, SupplierMaterialNumber,
+                    OrderQuantity, PurchaseOrderQuantityUnit, OrderPriceUnit,
+                    OrderPriceUnitToOrderUnitNmrtr, OrdPriceUnitToOrderUnitDnmntr,
+                    DocumentCurrency, NetPriceAmount, NetPriceQuantity,
+                    TaxCode, ShippingInstruction, TaxDeterminationDate, TaxCountry,
+                    PriceIsToBePrinted, OverdelivTolrtdLmtRatioInPct,
+                    UnlimitedOverdeliveryIsAllowed, UnderdelivTolrtdLmtRatioInPct,
+                    ValuationType, IsCompletelyDelivered, IsFinallyInvoiced,
+                    PurchaseOrderItemCategory, AccountAssignmentCategory,
+                    GoodsReceiptIsExpected, GoodsReceiptIsNonValuated,
+                    InvoiceIsExpected, InvoiceIsGoodsReceiptBased,
+                    PurchaseRequisition, PurchaseRequisitionItem,
+                    IsReturnsItem, RequisitionerName,
+                    Material, ManufacturerMaterial, ProductType,
+                    DeliveryAddressName, DeliveryAddressFullName,
+                    DeliveryAddressCityName, DeliveryAddressPostalCode, DeliveryAddressCountry,
+                    DownPaymentType, DownPaymentPercentageOfTotAmt,
+                    DownPaymentAmount, DownPaymentDueDate,
+                    PurchasingItemIsFreeOfCharge, UpdateDate
+                    ) VALUES (
+                    '{po}','{poItem}','{delCode}',
+                    N'{itemText}','{plant}','{storage}','{matGroup}',
+                    '{infoRec}','{supplierMat}',
+                    {poQty},'{poUom}','{priceUom}',
+                    {priceN},{priceD},
+                    '{currency}',{netPrice},{netQty},
+                    '{taxCode}','{shipInst}',{taxDate},'{taxCountry}',
+                    {pricePrint},{overPct},{overUnlimit},{underPct},
+                    '{valuationType}',{completeDel},{finalInv},
+                    '{poItemCat}','{acctCat}',
+                    {grExp},{grNonVal},
+                    {invExp},{invGr},
+                    '{pr}','{prItem}',
+                    {retItem},'{reqName}',
+                    '{material}','{manuMat}','{productType}',
+                    '{delName}','{delFull}',
+                    N'{delCity}','{delPost}','{delCountry}',
+                    '{dpType}',{dpPct},
+                    {dpAmt},{dpDate},
+                    {freeItem},GETDATE()
+                     );
+                    END
+                    ");
+                    rowCount++;
+                    if (rowCount % 100 == 0)
+                    {
+                        SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+                        batchSql.Clear();
+                    }
+                }
+                if (batchSql.Length > 0)
+                    SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+
+                Console.WriteLine($"Ms_PurchaseOrderItem : Sync Successful ({rowCount})");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+        private static async Task PurchaseOrderItemNote(string sText)
+        {
+            var batchSql = new StringBuilder();
+            int rowCount = 0;
+
+            try
+            {
+                var helper = new ODataHelper();
+
+                string _url = SQLConnect.GetStringValue(@"SELECT DataSyntax FROM Setting_SyncData WHERE DataType = 'PurchaseOrderItemNote' AND IsActive = 1 AND DataSource = 'OData' ", "dbDW");
+
+                DataTable dt = await helper.FetchAllODataAsync(_url, _USERNAME, _PASSWORD);
+                if (dt.Rows.Count == 0) return;
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    string po = row["PurchaseOrder"].ToString();
+                    string poItem = row["PurchaseOrderItem"].ToString();
+                    string textType = row["TextObjectType"].ToString();
+                    string lang = row["Language"].ToString();
+
+                    string longText = row["PlainLongText"]
+                        .ToString()
+                        .Replace("'", "''");
+
+                    batchSql.AppendLine($@"
+                    IF EXISTS (
+                    SELECT 1
+                    FROM Ms_PurchaseOrderItemNote
+                    WHERE PurchaseOrder = '{po}'
+                      AND PurchaseOrderItem = '{poItem}'
+                      AND TextObjectType = '{textType}'
+                      AND Language = '{lang}'
+                    )
+                    BEGIN
+                        UPDATE Ms_PurchaseOrderItemNote SET
+                            PlainLongText = N'{longText}',
+                            UpdateDate = GETDATE()
+                        WHERE PurchaseOrder = '{po}'
+                          AND PurchaseOrderItem = '{poItem}'
+                          AND TextObjectType = '{textType}'
+                          AND Language = '{lang}';
+                    END
+                    ELSE
+                    BEGIN
+                    INSERT INTO Ms_PurchaseOrderItemNote (
+                        PurchaseOrder,
+                        PurchaseOrderItem,
+                        TextObjectType,
+                        Language,
+                        PlainLongText,
+                        UpdateDate
+                    ) VALUES (
+                        '{po}',
+                        '{poItem}',
+                        '{textType}',
+                        '{lang}',
+                        N'{longText}',
+                        GETDATE()
+                    );
+                END
+                ");
+
+                    rowCount++;
+
+                    if (rowCount % 100 == 0)
+                    {
+                        SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+                        batchSql.Clear();
+                    }
+                }
+
+                if (batchSql.Length > 0)
+                    SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+
+                Console.WriteLine($"Ms_PurchaseOrderItemNote : Sync Successful ({rowCount})");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(batchSql.ToString());
+                throw;
+            }
+        }
+
+        private static async Task PurchaseOrderNote(string sText)
+        {
+            var batchSql = new StringBuilder();
+            int rowCount = 0;
+            string _url = "";
+
+            try
+            {
+                var helper = new ODataHelper();
+
+                // 1. Get URL
+                _url = SQLConnect.GetStringValue(@"
+                SELECT DataSyntax
+                FROM Setting_SyncData
+                WHERE DataType = 'PurchaseOrderNote'
+                AND IsActive = 1
+                AND DataSource = 'OData'
+                ", "dbDW");
+
+                // 2. Fetch OData
+                DataTable dt = await helper.FetchAllODataAsync(_url, _USERNAME, _PASSWORD);
+                if (dt.Rows.Count == 0) return;
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    // ===== Key fields =====
+                    string po = row["PurchaseOrder"].ToString().Replace("'", "''");
+                    string textType = row["TextObjectType"].ToString().Replace("'", "''");
+                    string lang = row["Language"].ToString().Replace("'", "''");
+
+                    // ===== Value fields =====
+                    string longText = row["PlainLongText"]?
+                        .ToString()
+                        .Replace("'", "''") ?? "";
+
+                    batchSql.AppendLine($@"
+                    IF EXISTS (
+                        SELECT 1
+                        FROM Ms_PurchaseOrderNote
+                        WHERE PurchaseOrder = N'{po}'
+                          AND TextObjectType = N'{textType}'
+                          AND Language = N'{lang}'
+                    )
+                    BEGIN
+                        UPDATE Ms_PurchaseOrderNote SET
+                            PlainLongText = N'{longText}',
+                            UpdateDate = GETDATE()
+                        WHERE PurchaseOrder = N'{po}'
+                          AND TextObjectType = N'{textType}'
+                          AND Language = N'{lang}';
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO Ms_PurchaseOrderNote (
+                            PurchaseOrder,
+                            TextObjectType,
+                            Language,
+                            PlainLongText,
+                            UpdateDate
+                        ) VALUES (
+                            N'{po}',
+                            N'{textType}',
+                            N'{lang}',
+                            N'{longText}',
+                            GETDATE()
+                        );
+                    END
+                    ");
+
+                    rowCount++;
+
+                    // batch 100 rows
+                    if (rowCount % 100 == 0)
+                    {
+                        SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+                        batchSql.Clear();
+                    }
+                }
+
+                // batch สุดท้าย
+                if (batchSql.Length > 0)
+                    SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+
+                // log success
+                SQLConnect.Updatedata(
+                    "INSERT INTO Log_Status(Process,Status,LogDate) VALUES ('PurchaseOrderNote','Successful',GETDATE())",
+                    "dbDW"
+                );
+
+                Console.WriteLine($"Ms_PurchaseOrderNote : Sync Successful ({rowCount})");
+            }
+            catch (Exception ex)
+            {
+                string errMsg = ex.Message.Replace("'", "''");
+
+                SQLConnect.Updatedata($@"
+                INSERT INTO Log_Status(Process,Status,LogDate,LogDescription)
+                VALUES ('PurchaseOrderNote','Fail',GETDATE(),'{errMsg}')
+                ", "dbDW");
+
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(batchSql.ToString());
+            }
+        }
+
+        private static async Task PurchaseOrderScheduleLine(string sText)
+        {
+            var batchSql = new StringBuilder();
+            int rowCount = 0;
+            string _url = "";
+
+            try
+            {
+                var helper = new ODataHelper();
+
+                // 1. Get OData URL
+                _url = SQLConnect.GetStringValue(@"
+            SELECT DataSyntax
+            FROM Setting_SyncData
+            WHERE DataType = 'PurchaseOrderScheduleLine'
+              AND IsActive = 1
+              AND DataSource = 'OData'
+        ", "dbDW");
+
+                // 2. Fetch OData
+                DataTable dt = await helper.FetchAllODataAsync(_url, _USERNAME, _PASSWORD);
+                if (dt.Rows.Count == 0) return;
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    // ===== Key fields =====
+                    string doc = row["PurchasingDocument"].ToString().Replace("'", "''");
+                    string item = row["PurchasingDocumentItem"].ToString().Replace("'", "''");
+                    string schedLine = row["ScheduleLine"].ToString().Replace("'", "''");
+
+                    // ===== Value fields =====
+                    string delivCat = row["DelivDateCategory"]?.ToString().Replace("'", "''");
+                    string delivDate = row["ScheduleLineDeliveryDate"]?.ToString();
+                    string unit = row["PurchaseOrderQuantityUnit"]?.ToString().Replace("'", "''");
+
+                    string orderQty = string.IsNullOrWhiteSpace(
+                        row["ScheduleLineOrderQuantity"]?.ToString()
+                    ) ? "0" : row["ScheduleLineOrderQuantity"].ToString();
+
+                    string delivTime = row["ScheduleLineDeliveryTime"]?.ToString();
+                    string stscDate = row["SchedLineStscDeliveryDate"]?.ToString();
+                    string pr = row["PurchaseRequisition"]?.ToString().Replace("'", "''");
+                    string prItem = row["PurchaseRequisitionItem"]?.ToString().Replace("'", "''");
+
+                    string commitQty = string.IsNullOrWhiteSpace(
+                        row["ScheduleLineCommittedQuantity"]?.ToString()
+                    ) ? "0" : row["ScheduleLineCommittedQuantity"].ToString();
+
+                    string perfStart = row["PerformancePeriodStartDate"]?.ToString();
+                    string perfEnd = row["PerformancePeriodEndDate"]?.ToString();
+
+                    batchSql.AppendLine($@"
+                    IF EXISTS (
+                        SELECT 1
+                        FROM Ms_PurchaseOrderScheduleLine
+                        WHERE PurchasingDocument = N'{doc}'
+                          AND PurchasingDocumentItem = N'{item}'
+                          AND ScheduleLine = N'{schedLine}'
+                    )
+                    BEGIN
+                    UPDATE Ms_PurchaseOrderScheduleLine SET
+                    DelivDateCategory = N'{delivCat}',
+                    ScheduleLineDeliveryDate = {(string.IsNullOrEmpty(delivDate) ? "NULL" : $"'{delivDate}'")},
+                    PurchaseOrderQuantityUnit = N'{unit}',
+                    ScheduleLineOrderQuantity = {orderQty},
+                    ScheduleLineDeliveryTime = N'{delivTime}',
+                    SchedLineStscDeliveryDate = {(string.IsNullOrEmpty(stscDate) ? "NULL" : $"'{stscDate}'")},
+                    PurchaseRequisition = N'{pr}',
+                    PurchaseRequisitionItem = N'{prItem}',
+                    ScheduleLineCommittedQuantity = {commitQty},
+                    PerformancePeriodStartDate = {(string.IsNullOrEmpty(perfStart) ? "NULL" : $"'{perfStart}'")},
+                    PerformancePeriodEndDate = {(string.IsNullOrEmpty(perfEnd) ? "NULL" : $"'{perfEnd}'")},
+                    UpdateDate = GETDATE()
+                    WHERE PurchasingDocument = N'{doc}'
+                    AND PurchasingDocumentItem = N'{item}'
+                    AND ScheduleLine = N'{schedLine}';
+                    END
+                    ELSE
+                    BEGIN
+                    INSERT INTO Ms_PurchaseOrderScheduleLine (
+                    PurchasingDocument,
+                    PurchasingDocumentItem,
+                    ScheduleLine,
+                    DelivDateCategory,
+                    ScheduleLineDeliveryDate,
+                    PurchaseOrderQuantityUnit,
+                    ScheduleLineOrderQuantity,
+                    ScheduleLineDeliveryTime,
+                    SchedLineStscDeliveryDate,
+                    PurchaseRequisition,
+                    PurchaseRequisitionItem,
+                    ScheduleLineCommittedQuantity,
+                    PerformancePeriodStartDate,
+                    PerformancePeriodEndDate,
+                    UpdateDate
+                    ) VALUES (
+                    N'{doc}',
+                    N'{item}',
+                    N'{schedLine}',
+                    N'{delivCat}',
+                    {(string.IsNullOrEmpty(delivDate) ? "NULL" : $"'{delivDate}'")},
+                    N'{unit}',
+                    {orderQty},
+                    N'{delivTime}',
+                    {(string.IsNullOrEmpty(stscDate) ? "NULL" : $"'{stscDate}'")},
+                    N'{pr}',
+                    N'{prItem}',
+                    {commitQty},
+                    {(string.IsNullOrEmpty(perfStart) ? "NULL" : $"'{perfStart}'")},
+                    {(string.IsNullOrEmpty(perfEnd) ? "NULL" : $"'{perfEnd}'")},
+                    GETDATE()
+                    );
+                    END
+                    ");
+
+                    rowCount++;
+
+                    if (rowCount % 100 == 0)
+                    {
+                        SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+                        batchSql.Clear();
+                    }
+                }
+
+                if (batchSql.Length > 0)
+                    SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+
+                SQLConnect.Updatedata(
+                    "INSERT INTO Log_Status(Process,Status,LogDate) VALUES ('PurchaseOrderScheduleLine','Successful',GETDATE())",
+                    "dbDW"
+                );
+
+                Console.WriteLine($"Ms_PurchaseOrderScheduleLine : Sync Successful ({rowCount})");
+            }
+            catch (Exception ex)
+            {
+                string err = ex.Message.Replace("'", "''");
+
+                SQLConnect.Updatedata($@"
+                    INSERT INTO Log_Status(Process,Status,LogDate,LogDescription)
+                    VALUES ('PurchaseOrderScheduleLine','Fail',GETDATE(),'{err}')
+                ", "dbDW");
+
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(batchSql.ToString());
+            }
+        }
+
+        private static async Task PurOrdAccountAssignment(string sText)
+        {
+            var batchSql = new StringBuilder();
+            int rowCount = 0;
+            string _url = "";
+
+            try
+            {
+                var helper = new ODataHelper();
+
+                // 1. Get URL
+                _url = SQLConnect.GetStringValue(@"
+                    SELECT DataSyntax
+                    FROM Setting_SyncData
+                    WHERE DataType = 'PurOrdAccountAssignment'
+                      AND IsActive = 1
+                      AND DataSource = 'OData'
+                ", "dbDW");
+
+                // 2. Fetch OData
+                DataTable dt = await helper.FetchAllODataAsync(_url, _USERNAME, _PASSWORD);
+                if (dt.Rows.Count == 0) return;
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    // ===== Key =====
+                    string po = row["PurchaseOrder"].ToString().Replace("'", "''");
+                    string item = row["PurchaseOrderItem"].ToString().Replace("'", "''");
+                    string accNo = row["AccountAssignmentNumber"].ToString().Replace("'", "''");
+
+                    // ===== Helpers =====
+                    string qty = string.IsNullOrWhiteSpace(row["Quantity"]?.ToString()) ? "0" : row["Quantity"].ToString();
+                    string netAmt = string.IsNullOrWhiteSpace(row["PurgDocNetAmount"]?.ToString()) ? "0" : row["PurgDocNetAmount"].ToString();
+                    string percent = string.IsNullOrWhiteSpace(row["MultipleAcctAssgmtDistrPercent"]?.ToString()) ? "0" : row["MultipleAcctAssgmtDistrPercent"].ToString();
+                    string isDeleted = row["IsDeleted"]?.ToString() == "true" ? "1" : "0";
+
+                    string settleDate = row["SettlementReferenceDate"]?.ToString();
+
+                    batchSql.AppendLine($@"
+                    IF EXISTS (
+                    SELECT 1 FROM Ms_PurOrdAccountAssignment
+                    WHERE PurchaseOrder = N'{po}'
+                      AND PurchaseOrderItem = N'{item}'
+                      AND AccountAssignmentNumber = N'{accNo}'
+                    )
+                    BEGIN
+                    UPDATE Ms_PurOrdAccountAssignment SET
+                    IsDeleted = {isDeleted},
+                    PurchaseOrderQuantityUnit = N'{row["PurchaseOrderQuantityUnit"]}',
+                    Quantity = {qty},
+                    MultipleAcctAssgmtDistrPercent = {percent},
+                    DocumentCurrency = N'{row["DocumentCurrency"]}',
+                    PurgDocNetAmount = {netAmt},
+                    GLAccount = N'{row["GLAccount"]}',
+                    BusinessArea = N'{row["BusinessArea"]}',
+                    CostCenter = N'{row["CostCenter"]}',
+                    ProfitCenter = N'{row["ProfitCenter"]}',
+                    FunctionalArea = N'{row["FunctionalArea"]}',
+                    SettlementReferenceDate = {(string.IsNullOrEmpty(settleDate) ? "NULL" : $"'{settleDate}'")},
+                    UpdateDate = GETDATE()
+                    WHERE PurchaseOrder = N'{po}'
+                    AND PurchaseOrderItem = N'{item}'
+                    AND AccountAssignmentNumber = N'{accNo}';
+                    END
+                    ELSE
+                    BEGIN
+                    INSERT INTO Ms_PurOrdAccountAssignment (
+                    PurchaseOrder,
+                    PurchaseOrderItem,
+                    AccountAssignmentNumber,
+                    IsDeleted,
+                    PurchaseOrderQuantityUnit,
+                    Quantity,
+                    MultipleAcctAssgmtDistrPercent,
+                    DocumentCurrency,
+                    PurgDocNetAmount,
+                    GLAccount,
+                    BusinessArea,
+                    CostCenter,
+                    ProfitCenter,
+                    FunctionalArea,
+                    SettlementReferenceDate,
+                    UpdateDate
+                    ) VALUES (
+                    N'{po}',
+                    N'{item}',
+                    N'{accNo}',
+                    {isDeleted},
+                    N'{row["PurchaseOrderQuantityUnit"]}',
+                    {qty},
+                    {percent},
+                    N'{row["DocumentCurrency"]}',
+                    {netAmt},
+                    N'{row["GLAccount"]}',
+                    N'{row["BusinessArea"]}',
+                    N'{row["CostCenter"]}',
+                    N'{row["ProfitCenter"]}',
+                    N'{row["FunctionalArea"]}',
+                    {(string.IsNullOrEmpty(settleDate) ? "NULL" : $"'{settleDate}'")},
+                    GETDATE()
+                    );
+                    END
+                    ");
+
+                    rowCount++;
+
+                    if (rowCount % 100 == 0)
+                    {
+                        SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+                        batchSql.Clear();
+                    }
+                }
+
+                if (batchSql.Length > 0)
+                    SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+
+                SQLConnect.Updatedata(
+                    "INSERT INTO Log_Status(Process,Status,LogDate) VALUES ('PurOrdAccountAssignment','Successful',GETDATE())",
+                    "dbDW"
+                );
+
+                Console.WriteLine($"PurOrdAccountAssignment : Sync Successful ({rowCount})");
+            }
+            catch (Exception ex)
+            {
+                string err = ex.Message.Replace("'", "''");
+
+                SQLConnect.Updatedata($@"
+            INSERT INTO Log_Status(Process,Status,LogDate,LogDescription)
+            VALUES ('PurOrdAccountAssignment','Fail',GETDATE(),'{err}')
+        ", "dbDW");
+
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(batchSql.ToString());
+            }
+        }
+
+        private static async Task PurOrdPricingElement(string sText)
+        {
+            var batchSql = new StringBuilder();
+            int rowCount = 0;
+            string _url = "";
+
+            try
+            {
+                var helper = new ODataHelper();
+
+                // 1. Get URL
+                _url = SQLConnect.GetStringValue(@"
+                        SELECT DataSyntax
+                        FROM Setting_SyncData
+                        WHERE DataType = 'PurOrdPricingElement'
+                          AND IsActive = 1
+                          AND DataSource = 'OData'
+                    ", "dbDW");
+
+                // 2. Fetch OData
+                DataTable dt = await helper.FetchAllODataAsync(_url, _USERNAME, _PASSWORD);
+                if (dt.Rows.Count == 0) return;
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    // ===== Key fields =====
+                    string po = row["PurchaseOrder"].ToString().Replace("'", "''");
+                    string poItem = row["PurchaseOrderItem"].ToString().Replace("'", "''");
+                    string pricingDoc = row["PricingDocument"].ToString().Replace("'", "''");
+                    string pricingDocItem = row["PricingDocumentItem"].ToString().Replace("'", "''");
+                    string step = row["PricingProcedureStep"].ToString().Replace("'", "''");
+                    string counter = row["PricingProcedureCounter"].ToString().Replace("'", "''");
+
+                    // ===== Helpers =====
+                    string rate = string.IsNullOrWhiteSpace(row["ConditionRateValue"]?.ToString()) ? "0" : row["ConditionRateValue"].ToString();
+                    string amt = string.IsNullOrWhiteSpace(row["ConditionAmount"]?.ToString()) ? "0" : row["ConditionAmount"].ToString();
+                    string qty = string.IsNullOrWhiteSpace(row["ConditionQuantity"]?.ToString()) ? "0" : row["ConditionQuantity"].ToString();
+                    string baseVal = string.IsNullOrWhiteSpace(row["ConditionBaseValue"]?.ToString()) ? "0" : row["ConditionBaseValue"].ToString();
+
+                    string stat = row["ConditionIsForStatistics"]?.ToString() == "true" ? "1" : "0";
+                    string accrual = row["IsRelevantForAccrual"]?.ToString() == "true" ? "1" : "0";
+                    string limit = row["CndnIsRelevantForLimitValue"]?.ToString() == "true" ? "1" : "0";
+                    string intco = row["CndnIsRelevantForIntcoBilling"]?.ToString() == "true" ? "1" : "0";
+                    string config = row["ConditionIsForConfiguration"]?.ToString() == "true" ? "1" : "0";
+                    string manual = row["ConditionIsManuallyChanged"]?.ToString() == "true" ? "1" : "0";
+
+                    batchSql.AppendLine($@"
+                    IF EXISTS (
+                        SELECT 1 FROM Ms_PurOrdPricingElement
+                        WHERE PurchaseOrder = N'{po}'
+                          AND PurchaseOrderItem = N'{poItem}'
+                          AND PricingDocument = N'{pricingDoc}'
+                          AND PricingDocumentItem = N'{pricingDocItem}'
+                          AND PricingProcedureStep = N'{step}'
+                          AND PricingProcedureCounter = N'{counter}'
+                    )
+                    BEGIN
+                    UPDATE Ms_PurOrdPricingElement SET
+                    ConditionType = N'{row["ConditionType"]}',
+                    ConditionRateValue = {rate},
+                    ConditionCurrency = N'{row["ConditionCurrency"]}',
+                    ConditionAmount = {amt},
+                    ConditionQuantity = {qty},
+                    ConditionBaseValue = {baseVal},
+                    ConditionIsForStatistics = {stat},
+                    IsRelevantForAccrual = {accrual},
+                    CndnIsRelevantForLimitValue = {limit},
+                    CndnIsRelevantForIntcoBilling = {intco},
+                    ConditionIsForConfiguration = {config},
+                    ConditionIsManuallyChanged = {manual},
+                    UpdateDate = GETDATE()
+                    WHERE PurchaseOrder = N'{po}'
+                  AND PurchaseOrderItem = N'{poItem}'
+                  AND PricingDocument = N'{pricingDoc}'
+                  AND PricingDocumentItem = N'{pricingDocItem}'
+                  AND PricingProcedureStep = N'{step}'
+                  AND PricingProcedureCounter = N'{counter}';
+                    END
+                    ELSE
+                    BEGIN
+                    INSERT INTO Ms_PurOrdPricingElement (
+                    PurchaseOrder,
+                    PurchaseOrderItem,
+                    PricingDocument,
+                    PricingDocumentItem,
+                    PricingProcedureStep,
+                    PricingProcedureCounter,
+                    ConditionType,
+                    ConditionRateValue,
+                    ConditionCurrency,
+                    ConditionAmount,
+                    ConditionQuantity,
+                    ConditionBaseValue,
+                    ConditionIsForStatistics,
+                    IsRelevantForAccrual,
+                    CndnIsRelevantForLimitValue,
+                    CndnIsRelevantForIntcoBilling,
+                    ConditionIsForConfiguration,
+                    ConditionIsManuallyChanged,
+                    UpdateDate
+                    ) VALUES (
+                    N'{po}',
+                    N'{poItem}',
+                    N'{pricingDoc}',
+                    N'{pricingDocItem}',
+                    N'{step}',
+                    N'{counter}',
+                    N'{row["ConditionType"]}',
+                    {rate},
+                    N'{row["ConditionCurrency"]}',
+                    {amt},
+                    {qty},
+                    {baseVal},
+                    {stat},
+                    {accrual},
+                    {limit},
+                    {intco},
+                    {config},
+                    {manual},
+                    GETDATE()
+                    );
+                    END
+                    ");
+
+                    rowCount++;
+
+                    if (rowCount % 100 == 0)
+                    {
+                        SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+                        batchSql.Clear();
+                    }
+                }
+
+                if (batchSql.Length > 0)
+                    SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+
+                SQLConnect.Updatedata(
+                    "INSERT INTO Log_Status(Process,Status,LogDate) VALUES ('PurOrdPricingElement','Successful',GETDATE())","dbDW"
+                );
+
+                Console.WriteLine($"Ms_PurOrdPricingElement : Sync Successful ({rowCount})");
+            }
+            catch (Exception ex)
+            {
+                string err = ex.Message.Replace("'", "''");
+
+                SQLConnect.Updatedata($@"
+            INSERT INTO Log_Status(Process,Status,LogDate,LogDescription)
+            VALUES ('PurOrdPricingElement','Fail',GETDATE(),'{err}')
+        ", "dbDW");
+
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(batchSql.ToString());
+            }
+        }
+
+        private static async Task PurchaseRequisitionHeader(string sText)
+        {
+            var batchSql = new StringBuilder();
+            int rowCount = 0;
+            string _url = "";
+
+            try
+            {
+                var helper = new ODataHelper();
+
+                // 1. Get OData URL
+                _url = SQLConnect.GetStringValue(@"
+            SELECT DataSyntax
+            FROM Setting_SyncData
+            WHERE DataType = 'PurchaseRequisitionHeader'
+              AND IsActive = 1
+              AND DataSource = 'OData'
+        ", "dbDW");
+
+                // 2. Fetch OData
+                DataTable dt = await helper.FetchAllODataAsync(_url, _USERNAME, _PASSWORD);
+                if (dt.Rows.Count == 0) return;
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    // ===== Key =====
+                    string pr = row["PurchaseRequisition"].ToString().Replace("'", "''");
+
+                    // ===== Value fields =====
+                    string prType = row["PurchaseRequisitionType"]?.ToString().Replace("'", "''");
+                    string desc = row["PurReqnDescription"]?.ToString().Replace("'", "''");
+
+                    string srcDet = row["SourceDetermination"]?.ToString() == "true" ? "1" : "0";
+                    string onlyVal = row["PurReqnDoOnlyValidation"]?.ToString() == "true" ? "1" : "0";
+
+                    batchSql.AppendLine($@"
+            IF EXISTS (
+                SELECT 1
+                FROM Ms_PurchaseRequisitionHeader
+                WHERE PurchaseRequisition = N'{pr}'
+            )
+            BEGIN
+                UPDATE Ms_PurchaseRequisitionHeader SET
+                    PurchaseRequisitionType = N'{prType}',
+                    PurReqnDescription = N'{desc}',
+                    SourceDetermination = {srcDet},
+                    PurReqnDoOnlyValidation = {onlyVal},
+                    UpdateDate = GETDATE()
+                WHERE PurchaseRequisition = N'{pr}';
+            END
+            ELSE
+            BEGIN
+                INSERT INTO Ms_PurchaseRequisitionHeader (
+                    PurchaseRequisition,
+                    PurchaseRequisitionType,
+                    PurReqnDescription,
+                    SourceDetermination,
+                    PurReqnDoOnlyValidation,
+                    UpdateDate
+                ) VALUES (
+                    N'{pr}',
+                    N'{prType}',
+                    N'{desc}',
+                    {srcDet},
+                    {onlyVal},
+                    GETDATE()
+                );
+            END
+            ");
+
+                    rowCount++;
+
+                    // batch ทุก 100 rows
+                    if (rowCount % 100 == 0)
+                    {
+                        SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+                        batchSql.Clear();
+                    }
+                }
+
+                // batch สุดท้าย
+                if (batchSql.Length > 0)
+                    SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+
+                // log success
+                SQLConnect.Updatedata(
+                    "INSERT INTO Log_Status(Process,Status,LogDate) VALUES ('PurchaseRequisitionHeader','Successful',GETDATE())",
+                    "dbDW"
+                );
+
+                Console.WriteLine($"Ms_PurchaseRequisitionHeader : Sync Successful ({rowCount})");
+            }
+            catch (Exception ex)
+            {
+                string err = ex.Message.Replace("'", "''");
+
+                SQLConnect.Updatedata($@"
+            INSERT INTO Log_Status(Process,Status,LogDate,LogDescription)
+            VALUES ('PurchaseRequisitionHeader','Fail',GETDATE(),'{err}')
+        ", "dbDW");
+
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(batchSql.ToString());
+            }
+        }
+        private static async Task PurchaseRequisitionItem(string sText)
+        {
+            var batchSql = new StringBuilder();
+            int rowCount = 0;
+            string _url = "";
+
+            try
+            {
+                var helper = new ODataHelper();
+
+                // 1. Get URL
+                _url = SQLConnect.GetStringValue(@"
+            SELECT DataSyntax
+            FROM Setting_SyncData
+            WHERE DataType = 'PurchaseRequisitionItem'
+              AND IsActive = 1
+              AND DataSource = 'OData'
+        ", "dbDW");
+
+                // 2. Fetch OData
+                DataTable dt = await helper.FetchAllODataAsync(_url, _USERNAME, _PASSWORD);
+                if (dt.Rows.Count == 0) return;
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    string pr = row["PurchaseRequisition"].ToString().Replace("'", "''");
+                    string item = row["PurchaseRequisitionItem"].ToString().Replace("'", "''");
+
+                    string reqQty = string.IsNullOrWhiteSpace(row["RequestedQuantity"]?.ToString()) ? "0" : row["RequestedQuantity"].ToString();
+                    string price = string.IsNullOrWhiteSpace(row["PurchaseRequisitionPrice"]?.ToString()) ? "0" : row["PurchaseRequisitionPrice"].ToString();
+                    string netAmt = string.IsNullOrWhiteSpace(row["ItemNetAmount"]?.ToString()) ? "0" : row["ItemNetAmount"].ToString();
+
+                    string isClosed = row["IsClosed"]?.ToString() == "true" ? "1" : "0";
+                    string relNotComp = row["ReleaseIsNotCompleted"]?.ToString() == "true" ? "1" : "0";
+                    string grExp = row["GoodsReceiptIsExpected"]?.ToString() == "true" ? "1" : "0";
+                    string invExp = row["InvoiceIsExpected"]?.ToString() == "true" ? "1" : "0";
+
+                    string delivDate = row["DeliveryDate"]?.ToString();
+                    string lastChange = row["LastChangeDateTime"]?.ToString();
+
+                    batchSql.AppendLine($@"
+            IF EXISTS (
+                SELECT 1 FROM Ms_PurchaseRequisitionItem
+                WHERE PurchaseRequisition = N'{pr}'
+                  AND PurchaseRequisitionItem = N'{item}'
+            )
+            BEGIN
+                UPDATE Ms_PurchaseRequisitionItem SET
+                    PurchaseRequisitionItemText = N'{row["PurchaseRequisitionItemText"]}',
+                    Material = N'{row["Material"]}',
+                    RequestedQuantity = {reqQty},
+                    PurchaseRequisitionPrice = {price},
+                    ItemNetAmount = {netAmt},
+                    IsClosed = {isClosed},
+                    ReleaseIsNotCompleted = {relNotComp},
+                    GoodsReceiptIsExpected = {grExp},
+                    InvoiceIsExpected = {invExp},
+                    DeliveryDate = {(string.IsNullOrEmpty(delivDate) ? "NULL" : $"'{delivDate}'")},
+                    LastChangeDateTime = {(string.IsNullOrEmpty(lastChange) ? "NULL" : $"'{lastChange}'")},
+                    UpdateDate = GETDATE()
+                WHERE PurchaseRequisition = N'{pr}'
+                  AND PurchaseRequisitionItem = N'{item}';
+            END
+            ELSE
+            BEGIN
+                INSERT INTO Ms_PurchaseRequisitionItem (
+                    PurchaseRequisition,
+                    PurchaseRequisitionItem,
+                    PurchaseRequisitionItemText,
+                    Material,
+                    RequestedQuantity,
+                    PurchaseRequisitionPrice,
+                    ItemNetAmount,
+                    IsClosed,
+                    ReleaseIsNotCompleted,
+                    GoodsReceiptIsExpected,
+                    InvoiceIsExpected,
+                    DeliveryDate,
+                    LastChangeDateTime,
+                    UpdateDate
+                ) VALUES (
+                    N'{pr}',
+                    N'{item}',
+                    N'{row["PurchaseRequisitionItemText"]}',
+                    N'{row["Material"]}',
+                    {reqQty},
+                    {price},
+                    {netAmt},
+                    {isClosed},
+                    {relNotComp},
+                    {grExp},
+                    {invExp},
+                    {(string.IsNullOrEmpty(delivDate) ? "NULL" : $"'{delivDate}'")},
+                    {(string.IsNullOrEmpty(lastChange) ? "NULL" : $"'{lastChange}'")},
+                    GETDATE()
+                );
+            END
+            ");
+
+                    rowCount++;
+
+                    if (rowCount % 100 == 0)
+                    {
+                        SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+                        batchSql.Clear();
+                    }
+                }
+
+                if (batchSql.Length > 0)
+                    SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+
+                SQLConnect.Updatedata(
+                    "INSERT INTO Log_Status(Process,Status,LogDate) VALUES ('PurchaseRequisitionItem','Successful',GETDATE())",
+                    "dbDW"
+                );
+
+                Console.WriteLine($"Ms_PurchaseRequisitionItem : Sync Successful ({rowCount})");
+            }
+            catch (Exception ex)
+            {
+                string err = ex.Message.Replace("'", "''");
+
+                SQLConnect.Updatedata($@"
+            INSERT INTO Log_Status(Process,Status,LogDate,LogDescription)
+            VALUES ('PurchaseRequisitionItem','Fail',GETDATE(),'{err}')
+        ", "dbDW");
+
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(batchSql.ToString());
+            }
+        }
+
+        private static async Task PurReqAddDelivery(string sText)
+        {
+            var batchSql = new StringBuilder();
+            int rowCount = 0;
+            string _url = "";
+
+            try
+            {
+                var helper = new ODataHelper();
+
+                // 1. Get URL
+                _url = SQLConnect.GetStringValue(@"
+            SELECT DataSyntax
+            FROM Setting_SyncData
+            WHERE DataType = 'PurReqAddDelivery'
+              AND IsActive = 1
+              AND DataSource = 'OData'
+        ", "dbDW");
+
+                // 2. Fetch OData
+                DataTable dt = await helper.FetchAllODataAsync(_url, _USERNAME, _PASSWORD);
+                if (dt.Rows.Count == 0) return;
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    string pr = row["PurchaseRequisition"].ToString().Replace("'", "''");
+                    string item = row["PurchaseRequisitionItem"].ToString().Replace("'", "''");
+
+                    string poBoxNoNum = row["POBoxIsWithoutNumber"]?.ToString() == "true" ? "1" : "0";
+
+                    batchSql.AppendLine($@"
+            IF EXISTS (
+                SELECT 1
+                FROM Ms_PurReqAddDelivery
+                WHERE PurchaseRequisition = N'{pr}'
+                  AND PurchaseRequisitionItem = N'{item}'
+            )
+            BEGIN
+                UPDATE Ms_PurReqAddDelivery SET
+                    AddressID = N'{row["AddressID"]}',
+                    ItemDeliveryAddressID = N'{row["ItemDeliveryAddressID"]}',
+                    ManualDeliveryAddressID = N'{row["ManualDeliveryAddressID"]}',
+                    Plant = N'{row["Plant"]}',
+                    AddressType = N'{row["AddressType"]}',
+                    FullName = N'{row["FullName"]}',
+                    CityName = N'{row["CityName"]}',
+                    CitySearch = N'{row["CitySearch"]}',
+                    Country = N'{row["Country"]}',
+                    CorrespondenceLanguage = N'{row["CorrespondenceLanguage"]}',
+                    POBoxIsWithoutNumber = {poBoxNoNum},
+                    UpdateDate = GETDATE()
+                WHERE PurchaseRequisition = N'{pr}'
+                  AND PurchaseRequisitionItem = N'{item}';
+            END
+            ELSE
+            BEGIN
+                INSERT INTO Ms_PurReqAddDelivery (
+                    PurchaseRequisition,
+                    PurchaseRequisitionItem,
+                    AddressID,
+                    ItemDeliveryAddressID,
+                    ManualDeliveryAddressID,
+                    Plant,
+                    AddressType,
+                    FullName,
+                    CityName,
+                    CitySearch,
+                    Country,
+                    CorrespondenceLanguage,
+                    POBoxIsWithoutNumber,
+                    UpdateDate
+                ) VALUES (
+                    N'{pr}',
+                    N'{item}',
+                    N'{row["AddressID"]}',
+                    N'{row["ItemDeliveryAddressID"]}',
+                    N'{row["ManualDeliveryAddressID"]}',
+                    N'{row["Plant"]}',
+                    N'{row["AddressType"]}',
+                    N'{row["FullName"]}',
+                    N'{row["CityName"]}',
+                    N'{row["CitySearch"]}',
+                    N'{row["Country"]}',
+                    N'{row["CorrespondenceLanguage"]}',
+                    {poBoxNoNum},
+                    GETDATE()
+                );
+            END
+            ");
+
+                    rowCount++;
+
+                    if (rowCount % 100 == 0)
+                    {
+                        SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+                        batchSql.Clear();
+                    }
+                }
+
+                if (batchSql.Length > 0)
+                    SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+
+                SQLConnect.Updatedata(
+                    "INSERT INTO Log_Status(Process,Status,LogDate) VALUES ('PurReqAddDelivery','Successful',GETDATE())",
+                    "dbDW"
+                );
+
+                Console.WriteLine($"Ms_PurReqAddDelivery : Sync Successful ({rowCount})");
+            }
+            catch (Exception ex)
+            {
+                string err = ex.Message.Replace("'", "''");
+
+                SQLConnect.Updatedata($@"
+            INSERT INTO Log_Status(Process,Status,LogDate,LogDescription)
+            VALUES ('PurReqAddDelivery','Fail',GETDATE(),'{err}')
+        ", "dbDW");
+
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(batchSql.ToString());
+            }
+        }
+
+        private static async Task PurReqnAcctAssgmt(string sText)
+        {
+            var batchSql = new StringBuilder();
+            int rowCount = 0;
+            string _url = "";
+
+            try
+            {
+                var helper = new ODataHelper();
+
+                // 1. Get URL
+                _url = SQLConnect.GetStringValue(@"
+            SELECT DataSyntax
+            FROM Setting_SyncData
+            WHERE DataType = 'PurReqnAcctAssgmt'
+              AND IsActive = 1
+              AND DataSource = 'OData'
+        ", "dbDW");
+
+                // 2. Fetch OData
+                DataTable dt = await helper.FetchAllODataAsync(_url, _USERNAME, _PASSWORD);
+                if (dt.Rows.Count == 0) return;
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    // ===== Key =====
+                    string pr = row["PurchaseRequisition"].ToString().Replace("'", "''");
+                    string item = row["PurchaseRequisitionItem"].ToString().Replace("'", "''");
+                    string accNo = row["PurchaseReqnAcctAssgmtNumber"].ToString().Replace("'", "''");
+
+                    // ===== Helpers =====
+                    string qty = string.IsNullOrWhiteSpace(row["Quantity"]?.ToString()) ? "0" : row["Quantity"].ToString();
+                    string netAmt = string.IsNullOrWhiteSpace(row["PurReqnNetAmount"]?.ToString()) ? "0" : row["PurReqnNetAmount"].ToString();
+                    string percent = string.IsNullOrWhiteSpace(row["MultipleAcctAssgmtDistrPercent"]?.ToString()) ? "0" : row["MultipleAcctAssgmtDistrPercent"].ToString();
+
+                    string createDate = row["CreationDate"]?.ToString();
+                    string settleDate = row["SettlementReferenceDate"]?.ToString();
+                    string validDate = row["ValidityDate"]?.ToString();
+
+                    batchSql.AppendLine($@"
+            IF EXISTS (
+                SELECT 1
+                FROM Ms_PurReqnAcctAssgmt
+                WHERE PurchaseRequisition = N'{pr}'
+                  AND PurchaseRequisitionItem = N'{item}'
+                  AND PurchaseReqnAcctAssgmtNumber = N'{accNo}'
+            )
+            BEGIN
+                UPDATE Ms_PurReqnAcctAssgmt SET
+                    BaseUnit = N'{row["BaseUnit"]}',
+                    Quantity = {qty},
+                    MultipleAcctAssgmtDistrPercent = {percent},
+                    PurReqnItemCurrency = N'{row["PurReqnItemCurrency"]}',
+                    PurReqnNetAmount = {netAmt},
+                    GLAccount = N'{row["GLAccount"]}',
+                    CostCenter = N'{row["CostCenter"]}',
+                    ProfitCenter = N'{row["ProfitCenter"]}',
+                    FunctionalArea = N'{row["FunctionalArea"]}',
+                    ValidityDate = {(string.IsNullOrEmpty(validDate) ? "NULL" : $"'{validDate}'")},
+                    UpdateDate = GETDATE()
+                WHERE PurchaseRequisition = N'{pr}'
+                  AND PurchaseRequisitionItem = N'{item}'
+                  AND PurchaseReqnAcctAssgmtNumber = N'{accNo}';
+            END
+            ELSE
+            BEGIN
+                INSERT INTO Ms_PurReqnAcctAssgmt (
+                    PurchaseRequisition,
+                    PurchaseRequisitionItem,
+                    PurchaseReqnAcctAssgmtNumber,
+                    BaseUnit,
+                    Quantity,
+                    MultipleAcctAssgmtDistrPercent,
+                    PurReqnItemCurrency,
+                    PurReqnNetAmount,
+                    GLAccount,
+                    CostCenter,
+                    ProfitCenter,
+                    FunctionalArea,
+                    ValidityDate,
+                    UpdateDate
+                ) VALUES (
+                    N'{pr}',
+                    N'{item}',
+                    N'{accNo}',
+                    N'{row["BaseUnit"]}',
+                    {qty},
+                    {percent},
+                    N'{row["PurReqnItemCurrency"]}',
+                    {netAmt},
+                    N'{row["GLAccount"]}',
+                    N'{row["CostCenter"]}',
+                    N'{row["ProfitCenter"]}',
+                    N'{row["FunctionalArea"]}',
+                    {(string.IsNullOrEmpty(validDate) ? "NULL" : $"'{validDate}'")},
+                    GETDATE()
+                );
+            END
+            ");
+
+                    rowCount++;
+
+                    if (rowCount % 100 == 0)
+                    {
+                        SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+                        batchSql.Clear();
+                    }
+                }
+
+                if (batchSql.Length > 0)
+                    SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+
+                SQLConnect.Updatedata(
+                    "INSERT INTO Log_Status(Process,Status,LogDate) VALUES ('PurReqnAcctAssgmt','Successful',GETDATE())",
+                    "dbDW"
+                );
+
+                Console.WriteLine($"Ms_PurReqnAcctAssgmt : Sync Successful ({rowCount})");
+            }
+            catch (Exception ex)
+            {
+                string err = ex.Message.Replace("'", "''");
+
+                SQLConnect.Updatedata($@"
+            INSERT INTO Log_Status(Process,Status,LogDate,LogDescription)
+            VALUES ('PurReqnAcctAssgmt','Fail',GETDATE(),'{err}')
+        ", "dbDW");
+
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(batchSql.ToString());
+            }
+        }
+
+        private static async Task InboundDeliveryHeader(string sText)
+        {
+            var batchSql = new StringBuilder();
+            int rowCount = 0;
+            string _url = "";
+
+            try
+            {
+                var helper = new ODataHelper();
+
+                string S(object o) => o?.ToString().Replace("'", "''") ?? "";
+
+                _url = SQLConnect.GetStringValue(@"
+                SELECT DataSyntax
+                FROM Setting_SyncData
+                WHERE DataType = 'InboundDeliveryHeader'
+                  AND IsActive = 1
+                  AND DataSource = 'OData'
+            ", "dbDW");
+
+                DataTable dt = await helper.FetchAllODataAsync(_url, _USERNAME, _PASSWORD);
+                if (dt.Rows.Count == 0) return;
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    string deliv = S(row["DeliveryDocument"]);
+
+                    string completeDeliv = row["CompleteDeliveryIsDefined"]?.ToString() == "true" ? "1" : "0";
+                    string orderComb = row["OrderCombinationIsAllowed"]?.ToString() == "true" ? "1" : "0";
+                    string inPlant = row["DeliveryIsInPlant"]?.ToString() == "true" ? "1" : "0";
+
+                    string grossW = string.IsNullOrWhiteSpace(row["HeaderGrossWeight"]?.ToString()) ? "0" : row["HeaderGrossWeight"].ToString();
+                    string netW = string.IsNullOrWhiteSpace(row["HeaderNetWeight"]?.ToString()) ? "0" : row["HeaderNetWeight"].ToString();
+                    string volume = string.IsNullOrWhiteSpace(row["HeaderVolume"]?.ToString()) ? "0" : row["HeaderVolume"].ToString();
+
+                    string deliveryDate = row["DeliveryDate"]?.ToString();
+                    string docDate = row["DocumentDate"]?.ToString();
+                    string createDate = row["CreationDate"]?.ToString();
+
+                    batchSql.AppendLine($@"
+                    IF EXISTS (
+                        SELECT 1 FROM Ms_InboundDeliveryHeader
+                        WHERE DeliveryDocument = N'{deliv}'
+                    )
+                    BEGIN
+                        UPDATE Ms_InboundDeliveryHeader SET
+                            DeliveryDocumentType = N'{S(row["DeliveryDocumentType"])}',
+                            DeliveryVersion = N'{S(row["DeliveryVersion"])}',
+                            Supplier = N'{S(row["Supplier"])}',
+                            ShippingPoint = N'{S(row["ShippingPoint"])}',
+                            ReceivingLocationTimeZone = N'{S(row["ReceivingLocationTimeZone"])}',
+                            CompleteDeliveryIsDefined = {completeDeliv},
+                            OrderCombinationIsAllowed = {orderComb},
+                            DeliveryIsInPlant = {inPlant},
+                            HeaderGrossWeight = {grossW},
+                            HeaderNetWeight = {netW},
+                            HeaderWeightUnit = N'{S(row["HeaderWeightUnit"])}',
+                            HeaderVolume = {volume},
+                            IncotermsClassification = N'{S(row["IncotermsClassification"])}',
+                            IncotermsTransferLocation = N'{S(row["IncotermsTransferLocation"])}',
+                            DeliveryDate = {(string.IsNullOrEmpty(deliveryDate) ? "NULL" : $"'{deliveryDate}'")},
+                            DocumentDate = {(string.IsNullOrEmpty(docDate) ? "NULL" : $"'{docDate}'")},
+                            CreationDate = {(string.IsNullOrEmpty(createDate) ? "NULL" : $"'{createDate}'")},
+                            OverallSDProcessStatus = N'{S(row["OverallSDProcessStatus"])}',
+                            OverallPickingStatus = N'{S(row["OverallPickingStatus"])}',
+                            UpdateDate = GETDATE()
+                        WHERE DeliveryDocument = N'{deliv}';
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO Ms_InboundDeliveryHeader (
+                            DeliveryDocument,
+                            DeliveryDocumentType,
+                            DeliveryVersion,
+                            Supplier,
+                            ShippingPoint,
+                            ReceivingLocationTimeZone,
+                            CompleteDeliveryIsDefined,
+                            OrderCombinationIsAllowed,
+                            DeliveryIsInPlant,
+                            HeaderGrossWeight,
+                            HeaderNetWeight,
+                            HeaderWeightUnit,
+                            HeaderVolume,
+                            IncotermsClassification,
+                            IncotermsTransferLocation,
+                            DeliveryDate,
+                            DocumentDate,
+                            CreationDate,
+                            OverallSDProcessStatus,
+                            OverallPickingStatus,
+                            UpdateDate
+                        ) VALUES (
+                            N'{deliv}',
+                            N'{S(row["DeliveryDocumentType"])}',
+                            N'{S(row["DeliveryVersion"])}',
+                            N'{S(row["Supplier"])}',
+                            N'{S(row["ShippingPoint"])}',
+                            N'{S(row["ReceivingLocationTimeZone"])}',
+                            {completeDeliv},
+                            {orderComb},
+                            {inPlant},
+                            {grossW},
+                            {netW},
+                            N'{S(row["HeaderWeightUnit"])}',
+                            {volume},
+                            N'{S(row["IncotermsClassification"])}',
+                            N'{S(row["IncotermsTransferLocation"])}',
+                            {(string.IsNullOrEmpty(deliveryDate) ? "NULL" : $"'{deliveryDate}'")},
+                            {(string.IsNullOrEmpty(docDate) ? "NULL" : $"'{docDate}'")},
+                            {(string.IsNullOrEmpty(createDate) ? "NULL" : $"'{createDate}'")},
+                            N'{S(row["OverallSDProcessStatus"])}',
+                            N'{S(row["OverallPickingStatus"])}',
+                            GETDATE()
+                        );
+                    END
+                    ");
+
+                    rowCount++;
+
+                    if (rowCount % 100 == 0)
+                    {
+                        SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+                        batchSql.Clear();
+                    }
+                }
+
+                if (batchSql.Length > 0)
+                    SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+
+                SQLConnect.Updatedata(
+                    "INSERT INTO Log_Status(Process,Status,LogDate) VALUES ('InboundDeliveryHeader','Successful',GETDATE())",
+                    "dbDW"
+                );
+
+                Console.WriteLine($"Ms_InboundDeliveryHeader : Sync Successful ({rowCount})");
+            }
+            catch (Exception ex)
+            {
+                string err = ex.Message.Replace("'", "''");
+
+                SQLConnect.Updatedata($@"
+                    INSERT INTO Log_Status(Process,Status,LogDate,LogDescription)
+                    VALUES ('InboundDeliveryHeader','Fail',GETDATE(),'{err}')
+                ", "dbDW");
+
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(batchSql.ToString());
+            }
+        }
+
+        private static async Task InboundDeliveryItem(string sText)
+        {
+            var batchSql = new StringBuilder();
+            int rowCount = 0;
+            string _url = "";
+
+            try
+            {
+                var helper = new ODataHelper();
+                string S(object o) => o?.ToString().Replace("'", "''") ?? "";
+
+                // 1. Get OData URL
+                _url = SQLConnect.GetStringValue(@"
+                    SELECT DataSyntax
+                    FROM Setting_SyncData
+                    WHERE DataType = 'InboundDeliveryItem'
+                      AND IsActive = 1
+                      AND DataSource = 'OData'
+                ", "dbDW");
+
+                // 2. Fetch OData
+                DataTable dt = await helper.FetchAllODataAsync(_url, _USERNAME, _PASSWORD);
+                if (dt.Rows.Count == 0) return;
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    string deliv = S(row["DeliveryDocument"]);
+                    string item = S(row["DeliveryDocumentItem"]);
+
+                    string actQty = string.IsNullOrWhiteSpace(row["ActualDeliveryQuantity"]?.ToString()) ? "0" : row["ActualDeliveryQuantity"].ToString();
+                    string baseQty = string.IsNullOrWhiteSpace(row["ActualDeliveredQtyInBaseUnit"]?.ToString()) ? "0" : row["ActualDeliveredQtyInBaseUnit"].ToString();
+                    string orgQty = string.IsNullOrWhiteSpace(row["OriginalDeliveryQuantity"]?.ToString()) ? "0" : row["OriginalDeliveryQuantity"].ToString();
+
+                    string grossW = string.IsNullOrWhiteSpace(row["ItemGrossWeight"]?.ToString()) ? "0" : row["ItemGrossWeight"].ToString();
+                    string netW = string.IsNullOrWhiteSpace(row["ItemNetWeight"]?.ToString()) ? "0" : row["ItemNetWeight"].ToString();
+                    string vol = string.IsNullOrWhiteSpace(row["ItemVolume"]?.ToString()) ? "0" : row["ItemVolume"].ToString();
+
+                    string compDeliv = row["IsCompletelyDelivered"]?.ToString() == "true" ? "1" : "0";
+                    string batchMng = row["MaterialIsBatchManaged"]?.ToString() == "true" ? "1" : "0";
+
+                    string createDate = row["CreationDate"]?.ToString();
+
+                    batchSql.AppendLine($@"
+                    IF EXISTS (
+                        SELECT 1 FROM Ms_InboundDeliveryItem
+                        WHERE DeliveryDocument = N'{deliv}'
+                          AND DeliveryDocumentItem = N'{item}'
+                    )
+                    BEGIN
+                        UPDATE Ms_InboundDeliveryItem SET
+                            Material = N'{S(row["Material"])}',
+                            MaterialGroup = N'{S(row["MaterialGroup"])}',
+                            Batch = N'{S(row["Batch"])}',
+                            BaseUnit = N'{S(row["BaseUnit"])}',
+                            DeliveryQuantityUnit = N'{S(row["DeliveryQuantityUnit"])}',
+                            ActualDeliveryQuantity = {actQty},
+                            ActualDeliveredQtyInBaseUnit = {baseQty},
+                            OriginalDeliveryQuantity = {orgQty},
+                            ItemGrossWeight = {grossW},
+                            ItemNetWeight = {netW},
+                            ItemWeightUnit = N'{S(row["ItemWeightUnit"])}',
+                            ItemVolume = {vol},
+                            ItemVolumeUnit = N'{S(row["ItemVolumeUnit"])}',
+                            ReferenceSDDocument = N'{S(row["ReferenceSDDocument"])}',
+                            ReferenceSDDocumentItem = N'{S(row["ReferenceSDDocumentItem"])}',
+                            ReferenceSDDocumentCategory = N'{S(row["ReferenceSDDocumentCategory"])}',
+                            Plant = N'{S(row["Plant"])}',
+                            StorageLocation = N'{S(row["StorageLocation"])}',
+                            Warehouse = N'{S(row["Warehouse"])}',
+                            SDProcessStatus = N'{S(row["SDProcessStatus"])}',
+                            PickingStatus = N'{S(row["PickingStatus"])}',
+                            IsCompletelyDelivered = {compDeliv},
+                            MaterialIsBatchManaged = {batchMng},
+                            DeliveryDocumentItemText = N'{S(row["DeliveryDocumentItemText"])}',
+                            CreationDate = {(string.IsNullOrEmpty(createDate) ? "NULL" : $"'{createDate}'")},
+                            UpdateDate = GETDATE()
+                        WHERE DeliveryDocument = N'{deliv}'
+                          AND DeliveryDocumentItem = N'{item}';
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO Ms_InboundDeliveryItem (
+                            DeliveryDocument,
+                            DeliveryDocumentItem,
+                            Material,
+                            MaterialGroup,
+                            Batch,
+                            BaseUnit,
+                            DeliveryQuantityUnit,
+                            ActualDeliveryQuantity,
+                            ActualDeliveredQtyInBaseUnit,
+                            OriginalDeliveryQuantity,
+                            ItemGrossWeight,
+                            ItemNetWeight,
+                            ItemWeightUnit,
+                            ItemVolume,
+                            ItemVolumeUnit,
+                            ReferenceSDDocument,
+                            ReferenceSDDocumentItem,
+                            ReferenceSDDocumentCategory,
+                            Plant,
+                            StorageLocation,
+                            Warehouse,
+                            SDProcessStatus,
+                            PickingStatus,
+                            IsCompletelyDelivered,
+                            MaterialIsBatchManaged,
+                            DeliveryDocumentItemText,
+                            CreationDate,
+                            UpdateDate
+                        ) VALUES (
+                            N'{deliv}',
+                            N'{item}',
+                            N'{S(row["Material"])}',
+                            N'{S(row["MaterialGroup"])}',
+                            N'{S(row["Batch"])}',
+                            N'{S(row["BaseUnit"])}',
+                            N'{S(row["DeliveryQuantityUnit"])}',
+                            {actQty},
+                            {baseQty},
+                            {orgQty},
+                            {grossW},
+                            {netW},
+                            N'{S(row["ItemWeightUnit"])}',
+                            {vol},
+                            N'{S(row["ItemVolumeUnit"])}',
+                            N'{S(row["ReferenceSDDocument"])}',
+                            N'{S(row["ReferenceSDDocumentItem"])}',
+                            N'{S(row["ReferenceSDDocumentCategory"])}',
+                            N'{S(row["Plant"])}',
+                            N'{S(row["StorageLocation"])}',
+                            N'{S(row["Warehouse"])}',
+                            N'{S(row["SDProcessStatus"])}',
+                            N'{S(row["PickingStatus"])}',
+                            {compDeliv},
+                            {batchMng},
+                            N'{S(row["DeliveryDocumentItemText"])}',
+                            {(string.IsNullOrEmpty(createDate) ? "NULL" : $"'{createDate}'")},
+                            GETDATE()
+                        );
+                    END
+                    ");
+
+                    rowCount++;
+
+                    if (rowCount % 100 == 0)
+                    {
+                        SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+                        batchSql.Clear();
+                    }
+                }
+
+                if (batchSql.Length > 0)
+                    SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
+
+                SQLConnect.Updatedata(
+                    "INSERT INTO Log_Status(Process,Status,LogDate) VALUES ('InboundDeliveryItem','Successful',GETDATE())",
+                    "dbDW"
+                );
+
+                Console.WriteLine($"Ms_InboundDeliveryItem : Sync Successful ({rowCount})");
+            }
+            catch (Exception ex)
+            {
+                string err = ex.Message.Replace("'", "''");
+
+                SQLConnect.Updatedata($@"
+                    INSERT INTO Log_Status(Process,Status,LogDate,LogDescription)
+                    VALUES ('InboundDeliveryItem','Fail',GETDATE(),'{err}')
+                ", "dbDW");
+
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(batchSql.ToString());
+            }
+        }
+
+       
+    }
 
 }
 
