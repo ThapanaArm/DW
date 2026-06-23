@@ -58,7 +58,7 @@ namespace BIS_INTERFACE_BC
             await UpdateBilling("Billing");
 
             //MaterialStock
-            //await MaterialStockInAcctMod("MaterialStockInAcctMod"); //--Kamonwan 060269
+            await MaterialStockInAcctMod("MaterialStockInAcctMod"); //--Kamonwan 060269
 
             //Purchase 
             await PurchaseOrder("PurchaseOrder"); //--Kamonwan 060269
