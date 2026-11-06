@@ -22,6 +22,7 @@ namespace BIS_INTERFACE_BC
         static async Task Main()
         { // รันงาน sync แบบ block ให้จบก่อน
 
+<<<<<<< HEAD
             //Product
             await Product("Product");
             await ProductDescription("ProductDescription");
@@ -57,9 +58,46 @@ namespace BIS_INTERFACE_BC
             //Billing
             await AddBilling("Billing");
             await UpdateBilling("Billing");
+=======
+            ////Product
+            //await Product("Product");
+            //await ProductDescription("ProductDescription");
+            //await ProductPlant("ProductPlant");
+            //await ProductPlantProcurement("ProductPlantProcurement"); //ปรับถึงนี้
+            //await ProductSalesDelivery("ProductPlantProcurement");
+            //await ProductSalesTax("ProductSalesTax");
+            //await ProductStorage("ProductStorage");
+            //await ProductUnitsOfMeasure("ProductUnitsOfMeasure");
+
+
+            ////Business Partner
+            //await BusinessPartner("BusinessPartner");
+            //await BusinessPartnerAddress("BusinessPartnerAddress");
+            //await BusinessPartnerEmail("BusinessPartnerEmail");
+            //await BusinessPartnerPhone("BusinessPartnerPhone");
+            //await BusinnessPartnerCustomer("BusinnessPartnerCustomer");
+            //await BusinnessPartnerCustomerCompany("BusinnessPartnerCustomerCompany");
+            //await BusinnessPartnerCustomerSalesaArea("BusinnessPartnerCustomerSalesaArea");
+            //await BusinessPartnerCustSalesPartnerFunc("BusinessPartnerCustSalesPartnerFunc");
+            //await BusinessPartnerCustSalesSupplier("BusinessPartnerCustSalesSupplier"); //--Kamonwan 050269
+            //await BusinessPartnerCustSalesSupplierCompany("BusinessPartnerCustSalesSupplierCompany"); //--Kamonwan 060269
+
+
+            ////Sales Order
+            //await AddSalesOrder("SalesOrder");
+            //await UpdateSalesOrder("SalesOrder");
+            //await RecheckcSalesOrderHeaderPartner("Recheck");
+
+
+            ////OutbDelivery
+            //await AddOutbDelivery("OutbDelivery");
+            ////Billing
+            //await AddBilling("Billing");
+            //await UpdateBilling("Billing");
+>>>>>>> for push
 
             //MaterialStock
-            await MaterialStockInAcctMod("MaterialStockInAcctMod"); //--Kamonwan 060269
+            //await MaterialStockInAcctMod("MaterialStockInAcctMod"); //--Kamonwan 060269
 
             //Purchase 
             await PurchaseOrder("PurchaseOrder"); //--Kamonwan 060269
@@ -73,8 +111,8 @@ namespace BIS_INTERFACE_BC
             await PurchaseRequisitionItem("PurchaseRequisitionItem"); //--Kamonwan 060269
             await PurReqAddDelivery("PurReqAddDelivery"); //--Kamonwan 060269
             await PurReqnAcctAssgmt("PurReqnAcctAssgmt"); //--Kamonwan 060269
-            await InboundDeliveryHeader("InboundDeliveryHeader"); //--Kamonwan 060269
-            await InboundDeliveryItem("InboundDeliveryItem"); //--Kamonwan 060269
+            //await InboundDeliveryHeader("InboundDeliveryHeader"); //--Kamonwan 060269
+            //await InboundDeliveryItem("InboundDeliveryItem"); //--Kamonwan 060269
 
             //Supplier Invoice
             await SupplierInvoice("SupplierInvoice"); //--Sukanya 031169
@@ -171,7 +209,7 @@ namespace BIS_INTERFACE_BC
                         formattedLastChange = "1900-01-01";
                     }
 
-                            batchSql.AppendLine($@"
+                    batchSql.AppendLine($@"
                                 IF EXISTS (SELECT 1 FROM Ms_Product WHERE Product = '{product}')
                                 BEGIN
                                     UPDATE Ms_Product SET 
@@ -2749,7 +2787,7 @@ namespace BIS_INTERFACE_BC
                     SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
                 }
 
-                SQLConnect.Updatedata("INSERT INTO Log_Status(Process,Status,LogDate) VALUES ('PurchaseOrder','Successful',GETDATE())","dbDW");
+                SQLConnect.Updatedata("INSERT INTO Log_Status(Process,Status,LogDate) VALUES ('PurchaseOrder','Successful',GETDATE())", "dbDW");
 
                 Console.WriteLine($"PurchaseOrder : Sync Successful ({rowCount} rows)");
             }
@@ -3574,7 +3612,7 @@ namespace BIS_INTERFACE_BC
                     SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
 
                 SQLConnect.Updatedata(
-                    "INSERT INTO Log_Status(Process,Status,LogDate) VALUES ('PurOrdPricingElement','Successful',GETDATE())","dbDW"
+                    "INSERT INTO Log_Status(Process,Status,LogDate) VALUES ('PurOrdPricingElement','Successful',GETDATE())", "dbDW"
                 );
 
                 Console.WriteLine($"Op_PurOrdPricingElement : Sync Successful ({rowCount})");
@@ -4413,6 +4451,7 @@ namespace BIS_INTERFACE_BC
             }
         }
 
+<<<<<<< HEAD
         //Supplier Invoice (API_SUPPLIERINVOICE_PROCESS_SRV) //--Sukanya 031169
         private enum ColType { Text, Number, Date, Flag }
         private const ColType S = ColType.Text, N = ColType.Number, D = ColType.Date, B = ColType.Flag;
@@ -4674,6 +4713,9 @@ namespace BIS_INTERFACE_BC
         }
 
        
+=======
+
+>>>>>>> for push
     }
 
 }
