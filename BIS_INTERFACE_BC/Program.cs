@@ -18,10 +18,11 @@ namespace BIS_INTERFACE_BC
 
         private static string _USERNAME = "ABAPUSER";
         private static string _PASSWORD = "Thailand@12345678901234567890";
+
         static async Task Main()
         { // รันงาน sync แบบ block ให้จบก่อน
 
-            ////Product
+            //Product
             await Product("Product");
             await ProductDescription("ProductDescription");
             await ProductPlant("ProductPlant");
@@ -32,7 +33,7 @@ namespace BIS_INTERFACE_BC
             await ProductUnitsOfMeasure("ProductUnitsOfMeasure");
 
 
-            ////Business Partner
+            //Business Partner
             await BusinessPartner("BusinessPartner");
             await BusinessPartnerAddress("BusinessPartnerAddress");
             await BusinessPartnerEmail("BusinessPartnerEmail");
@@ -45,15 +46,15 @@ namespace BIS_INTERFACE_BC
             await BusinessPartnerCustSalesSupplierCompany("BusinessPartnerCustSalesSupplierCompany"); //--Kamonwan 060269
 
 
-            ////Sales Order
+            //Sales Order
             await AddSalesOrder("SalesOrder");
             await UpdateSalesOrder("SalesOrder");
             await RecheckcSalesOrderHeaderPartner("Recheck");
 
 
-            ////OutbDelivery
+            //OutbDelivery
             await AddOutbDelivery("OutbDelivery");
-            ////Billing
+            //Billing
             await AddBilling("Billing");
             await UpdateBilling("Billing");
 
@@ -74,6 +75,21 @@ namespace BIS_INTERFACE_BC
             await PurReqnAcctAssgmt("PurReqnAcctAssgmt"); //--Kamonwan 060269
             await InboundDeliveryHeader("InboundDeliveryHeader"); //--Kamonwan 060269
             await InboundDeliveryItem("InboundDeliveryItem"); //--Kamonwan 060269
+
+            //Supplier Invoice
+            await SupplierInvoice("SupplierInvoice"); //--Sukanya 031169
+            await SuplrInvcItemPurOrdRef("SuplrInvcItemPurOrdRef"); //--Sukanya 031169
+            await SupplierInvoiceItemGLAcct("SupplierInvoiceItemGLAcct"); //--Sukanya 031169
+            await SupplierInvoiceTax("SupplierInvoiceTax"); //--Sukanya 031169
+            await SuplrInvcHeaderWhldgTax("SuplrInvcHeaderWhldgTax"); //--Sukanya 031169
+
+            //GR
+            await MaterialDocumentHeader("MaterialDocumentHeader"); //--Sukanya 031169
+            await MaterialDocumentItem("MaterialDocumentItem"); //--Sukanya 031169
+
+            //Reservation
+            await ReservationDocumentHeader("ReservationDocumentHeader"); //--Sukanya 041169
+            await ReservationDocumentItem("ReservationDocumentItem"); //--Sukanya 041169
 
 
             ServiceBase[] ServicesToRun;
@@ -2624,11 +2640,11 @@ namespace BIS_INTERFACE_BC
 
                     batchSql.AppendLine($@"
                     IF EXISTS (
-                        SELECT 1 FROM MS_PurchaseOrder
+                        SELECT 1 FROM Op_PurchaseOrder
                         WHERE PurchaseOrder = '{purchaseOrder}'
                     )
                     BEGIN
-                        UPDATE MS_PurchaseOrder SET
+                        UPDATE Op_PurchaseOrder SET
                             CompanyCode = '{companyCode}',
                             PurchaseOrderType = '{poType}',
                             PurchasingProcessingStatus = '{status}',
@@ -2660,7 +2676,7 @@ namespace BIS_INTERFACE_BC
                     END
                     ELSE
                     BEGIN
-                        INSERT INTO MS_PurchaseOrder (
+                        INSERT INTO Op_PurchaseOrder (
                             PurchaseOrder,
                             CompanyCode,
                             PurchaseOrderType,
@@ -2822,12 +2838,12 @@ namespace BIS_INTERFACE_BC
 
                     batchSql.AppendLine($@"
                     IF EXISTS (
-                    SELECT 1 FROM Ms_PurchaseOrderItem
+                    SELECT 1 FROM Op_PurchaseOrderItem
                     WHERE PurchaseOrder = '{po}'
                     AND PurchaseOrderItem = '{poItem}'
                     )
                     BEGIN
-                    UPDATE Ms_PurchaseOrderItem SET
+                    UPDATE Op_PurchaseOrderItem SET
                     PurchasingDocumentDeletionCode = '{delCode}',
                     PurchaseOrderItemText = N'{itemText}',
                     Plant = '{plant}',
@@ -2883,7 +2899,7 @@ namespace BIS_INTERFACE_BC
                     END
                     ELSE
                    BEGIN
-                   INSERT INTO Ms_PurchaseOrderItem (
+                   INSERT INTO Op_PurchaseOrderItem (
                     PurchaseOrder, PurchaseOrderItem, PurchasingDocumentDeletionCode,
                     PurchaseOrderItemText, Plant, StorageLocation, MaterialGroup,
                     PurchasingInfoRecord, SupplierMaterialNumber,
@@ -2939,7 +2955,7 @@ namespace BIS_INTERFACE_BC
                 if (batchSql.Length > 0)
                     SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
 
-                Console.WriteLine($"Ms_PurchaseOrderItem : Sync Successful ({rowCount})");
+                Console.WriteLine($"Op_PurchaseOrderItem : Sync Successful ({rowCount})");
             }
             catch (Exception ex)
             {
@@ -2974,14 +2990,14 @@ namespace BIS_INTERFACE_BC
                     batchSql.AppendLine($@"
                     IF EXISTS (
                     SELECT 1
-                    FROM Ms_PurchaseOrderItemNote
+                    FROM Op_PurchaseOrderItemNote
                     WHERE PurchaseOrder = '{po}'
                       AND PurchaseOrderItem = '{poItem}'
                       AND TextObjectType = '{textType}'
                       AND Language = '{lang}'
                     )
                     BEGIN
-                        UPDATE Ms_PurchaseOrderItemNote SET
+                        UPDATE Op_PurchaseOrderItemNote SET
                             PlainLongText = N'{longText}',
                             UpdateDate = GETDATE()
                         WHERE PurchaseOrder = '{po}'
@@ -2991,7 +3007,7 @@ namespace BIS_INTERFACE_BC
                     END
                     ELSE
                     BEGIN
-                    INSERT INTO Ms_PurchaseOrderItemNote (
+                    INSERT INTO Op_PurchaseOrderItemNote (
                         PurchaseOrder,
                         PurchaseOrderItem,
                         TextObjectType,
@@ -3021,7 +3037,7 @@ namespace BIS_INTERFACE_BC
                 if (batchSql.Length > 0)
                     SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
 
-                Console.WriteLine($"Ms_PurchaseOrderItemNote : Sync Successful ({rowCount})");
+                Console.WriteLine($"Op_PurchaseOrderItemNote : Sync Successful ({rowCount})");
             }
             catch (Exception ex)
             {
@@ -3069,13 +3085,13 @@ namespace BIS_INTERFACE_BC
                     batchSql.AppendLine($@"
                     IF EXISTS (
                         SELECT 1
-                        FROM Ms_PurchaseOrderNote
+                        FROM Op_PurchaseOrderNote
                         WHERE PurchaseOrder = N'{po}'
                           AND TextObjectType = N'{textType}'
                           AND Language = N'{lang}'
                     )
                     BEGIN
-                        UPDATE Ms_PurchaseOrderNote SET
+                        UPDATE Op_PurchaseOrderNote SET
                             PlainLongText = N'{longText}',
                             UpdateDate = GETDATE()
                         WHERE PurchaseOrder = N'{po}'
@@ -3084,7 +3100,7 @@ namespace BIS_INTERFACE_BC
                     END
                     ELSE
                     BEGIN
-                        INSERT INTO Ms_PurchaseOrderNote (
+                        INSERT INTO Op_PurchaseOrderNote (
                             PurchaseOrder,
                             TextObjectType,
                             Language,
@@ -3120,7 +3136,7 @@ namespace BIS_INTERFACE_BC
                     "dbDW"
                 );
 
-                Console.WriteLine($"Ms_PurchaseOrderNote : Sync Successful ({rowCount})");
+                Console.WriteLine($"Op_PurchaseOrderNote : Sync Successful ({rowCount})");
             }
             catch (Exception ex)
             {
@@ -3190,13 +3206,13 @@ namespace BIS_INTERFACE_BC
                     batchSql.AppendLine($@"
                     IF EXISTS (
                         SELECT 1
-                        FROM Ms_PurchaseOrderScheduleLine
+                        FROM Op_PurchaseOrderScheduleLine
                         WHERE PurchasingDocument = N'{doc}'
                           AND PurchasingDocumentItem = N'{item}'
                           AND ScheduleLine = N'{schedLine}'
                     )
                     BEGIN
-                    UPDATE Ms_PurchaseOrderScheduleLine SET
+                    UPDATE Op_PurchaseOrderScheduleLine SET
                     DelivDateCategory = N'{delivCat}',
                     ScheduleLineDeliveryDate = {(string.IsNullOrEmpty(delivDate) ? "NULL" : $"'{delivDate}'")},
                     PurchaseOrderQuantityUnit = N'{unit}',
@@ -3215,7 +3231,7 @@ namespace BIS_INTERFACE_BC
                     END
                     ELSE
                     BEGIN
-                    INSERT INTO Ms_PurchaseOrderScheduleLine (
+                    INSERT INTO Op_PurchaseOrderScheduleLine (
                     PurchasingDocument,
                     PurchasingDocumentItem,
                     ScheduleLine,
@@ -3268,7 +3284,7 @@ namespace BIS_INTERFACE_BC
                     "dbDW"
                 );
 
-                Console.WriteLine($"Ms_PurchaseOrderScheduleLine : Sync Successful ({rowCount})");
+                Console.WriteLine($"Op_PurchaseOrderScheduleLine : Sync Successful ({rowCount})");
             }
             catch (Exception ex)
             {
@@ -3324,13 +3340,13 @@ namespace BIS_INTERFACE_BC
 
                     batchSql.AppendLine($@"
                     IF EXISTS (
-                    SELECT 1 FROM Ms_PurOrdAccountAssignment
+                    SELECT 1 FROM Op_PurOrdAccountAssignment
                     WHERE PurchaseOrder = N'{po}'
                       AND PurchaseOrderItem = N'{item}'
                       AND AccountAssignmentNumber = N'{accNo}'
                     )
                     BEGIN
-                    UPDATE Ms_PurOrdAccountAssignment SET
+                    UPDATE Op_PurOrdAccountAssignment SET
                     IsDeleted = {isDeleted},
                     PurchaseOrderQuantityUnit = N'{row["PurchaseOrderQuantityUnit"]}',
                     Quantity = {qty},
@@ -3350,7 +3366,7 @@ namespace BIS_INTERFACE_BC
                     END
                     ELSE
                     BEGIN
-                    INSERT INTO Ms_PurOrdAccountAssignment (
+                    INSERT INTO Op_PurOrdAccountAssignment (
                     PurchaseOrder,
                     PurchaseOrderItem,
                     AccountAssignmentNumber,
@@ -3469,7 +3485,7 @@ namespace BIS_INTERFACE_BC
 
                     batchSql.AppendLine($@"
                     IF EXISTS (
-                        SELECT 1 FROM Ms_PurOrdPricingElement
+                        SELECT 1 FROM Op_PurOrdPricingElement
                         WHERE PurchaseOrder = N'{po}'
                           AND PurchaseOrderItem = N'{poItem}'
                           AND PricingDocument = N'{pricingDoc}'
@@ -3478,7 +3494,7 @@ namespace BIS_INTERFACE_BC
                           AND PricingProcedureCounter = N'{counter}'
                     )
                     BEGIN
-                    UPDATE Ms_PurOrdPricingElement SET
+                    UPDATE Op_PurOrdPricingElement SET
                     ConditionType = N'{row["ConditionType"]}',
                     ConditionRateValue = {rate},
                     ConditionCurrency = N'{row["ConditionCurrency"]}',
@@ -3501,7 +3517,7 @@ namespace BIS_INTERFACE_BC
                     END
                     ELSE
                     BEGIN
-                    INSERT INTO Ms_PurOrdPricingElement (
+                    INSERT INTO Op_PurOrdPricingElement (
                     PurchaseOrder,
                     PurchaseOrderItem,
                     PricingDocument,
@@ -3561,7 +3577,7 @@ namespace BIS_INTERFACE_BC
                     "INSERT INTO Log_Status(Process,Status,LogDate) VALUES ('PurOrdPricingElement','Successful',GETDATE())","dbDW"
                 );
 
-                Console.WriteLine($"Ms_PurOrdPricingElement : Sync Successful ({rowCount})");
+                Console.WriteLine($"Op_PurOrdPricingElement : Sync Successful ({rowCount})");
             }
             catch (Exception ex)
             {
@@ -3615,11 +3631,11 @@ namespace BIS_INTERFACE_BC
                     batchSql.AppendLine($@"
             IF EXISTS (
                 SELECT 1
-                FROM Ms_PurchaseRequisitionHeader
+                FROM Op_PurchaseRequisitionHeader
                 WHERE PurchaseRequisition = N'{pr}'
             )
             BEGIN
-                UPDATE Ms_PurchaseRequisitionHeader SET
+                UPDATE Op_PurchaseRequisitionHeader SET
                     PurchaseRequisitionType = N'{prType}',
                     PurReqnDescription = N'{desc}',
                     SourceDetermination = {srcDet},
@@ -3629,7 +3645,7 @@ namespace BIS_INTERFACE_BC
             END
             ELSE
             BEGIN
-                INSERT INTO Ms_PurchaseRequisitionHeader (
+                INSERT INTO Op_PurchaseRequisitionHeader (
                     PurchaseRequisition,
                     PurchaseRequisitionType,
                     PurReqnDescription,
@@ -3667,7 +3683,7 @@ namespace BIS_INTERFACE_BC
                     "dbDW"
                 );
 
-                Console.WriteLine($"Ms_PurchaseRequisitionHeader : Sync Successful ({rowCount})");
+                Console.WriteLine($"Op_PurchaseRequisitionHeader : Sync Successful ({rowCount})");
             }
             catch (Exception ex)
             {
@@ -3724,12 +3740,12 @@ namespace BIS_INTERFACE_BC
 
                     batchSql.AppendLine($@"
             IF EXISTS (
-                SELECT 1 FROM Ms_PurchaseRequisitionItem
+                SELECT 1 FROM Op_PurchaseRequisitionItem
                 WHERE PurchaseRequisition = N'{pr}'
                   AND PurchaseRequisitionItem = N'{item}'
             )
             BEGIN
-                UPDATE Ms_PurchaseRequisitionItem SET
+                UPDATE Op_PurchaseRequisitionItem SET
                     PurchaseRequisitionItemText = N'{row["PurchaseRequisitionItemText"]}',
                     Material = N'{row["Material"]}',
                     RequestedQuantity = {reqQty},
@@ -3747,7 +3763,7 @@ namespace BIS_INTERFACE_BC
             END
             ELSE
             BEGIN
-                INSERT INTO Ms_PurchaseRequisitionItem (
+                INSERT INTO Op_PurchaseRequisitionItem (
                     PurchaseRequisition,
                     PurchaseRequisitionItem,
                     PurchaseRequisitionItemText,
@@ -3798,7 +3814,7 @@ namespace BIS_INTERFACE_BC
                     "dbDW"
                 );
 
-                Console.WriteLine($"Ms_PurchaseRequisitionItem : Sync Successful ({rowCount})");
+                Console.WriteLine($"Op_PurchaseRequisitionItem : Sync Successful ({rowCount})");
             }
             catch (Exception ex)
             {
@@ -3847,12 +3863,12 @@ namespace BIS_INTERFACE_BC
                     batchSql.AppendLine($@"
             IF EXISTS (
                 SELECT 1
-                FROM Ms_PurReqAddDelivery
+                FROM Op_PurReqAddDelivery
                 WHERE PurchaseRequisition = N'{pr}'
                   AND PurchaseRequisitionItem = N'{item}'
             )
             BEGIN
-                UPDATE Ms_PurReqAddDelivery SET
+                UPDATE Op_PurReqAddDelivery SET
                     AddressID = N'{row["AddressID"]}',
                     ItemDeliveryAddressID = N'{row["ItemDeliveryAddressID"]}',
                     ManualDeliveryAddressID = N'{row["ManualDeliveryAddressID"]}',
@@ -3870,7 +3886,7 @@ namespace BIS_INTERFACE_BC
             END
             ELSE
             BEGIN
-                INSERT INTO Ms_PurReqAddDelivery (
+                INSERT INTO Op_PurReqAddDelivery (
                     PurchaseRequisition,
                     PurchaseRequisitionItem,
                     AddressID,
@@ -3921,7 +3937,7 @@ namespace BIS_INTERFACE_BC
                     "dbDW"
                 );
 
-                Console.WriteLine($"Ms_PurReqAddDelivery : Sync Successful ({rowCount})");
+                Console.WriteLine($"Op_PurReqAddDelivery : Sync Successful ({rowCount})");
             }
             catch (Exception ex)
             {
@@ -3979,13 +3995,13 @@ namespace BIS_INTERFACE_BC
                     batchSql.AppendLine($@"
             IF EXISTS (
                 SELECT 1
-                FROM Ms_PurReqnAcctAssgmt
+                FROM Op_PurReqnAcctAssgmt
                 WHERE PurchaseRequisition = N'{pr}'
                   AND PurchaseRequisitionItem = N'{item}'
                   AND PurchaseReqnAcctAssgmtNumber = N'{accNo}'
             )
             BEGIN
-                UPDATE Ms_PurReqnAcctAssgmt SET
+                UPDATE Op_PurReqnAcctAssgmt SET
                     BaseUnit = N'{row["BaseUnit"]}',
                     Quantity = {qty},
                     MultipleAcctAssgmtDistrPercent = {percent},
@@ -4003,7 +4019,7 @@ namespace BIS_INTERFACE_BC
             END
             ELSE
             BEGIN
-                INSERT INTO Ms_PurReqnAcctAssgmt (
+                INSERT INTO Op_PurReqnAcctAssgmt (
                     PurchaseRequisition,
                     PurchaseRequisitionItem,
                     PurchaseReqnAcctAssgmtNumber,
@@ -4054,7 +4070,7 @@ namespace BIS_INTERFACE_BC
                     "dbDW"
                 );
 
-                Console.WriteLine($"Ms_PurReqnAcctAssgmt : Sync Successful ({rowCount})");
+                Console.WriteLine($"Op_PurReqnAcctAssgmt : Sync Successful ({rowCount})");
             }
             catch (Exception ex)
             {
@@ -4394,6 +4410,266 @@ namespace BIS_INTERFACE_BC
 
                 Console.WriteLine(ex.Message);
                 Console.WriteLine(batchSql.ToString());
+            }
+        }
+
+        //Supplier Invoice (API_SUPPLIERINVOICE_PROCESS_SRV) //--Sukanya 031169
+        private enum ColType { Text, Number, Date, Flag }
+        private const ColType S = ColType.Text, N = ColType.Number, D = ColType.Date, B = ColType.Flag;
+
+        private static readonly string[] SupplierInvoiceKeys = { "SupplierInvoice", "FiscalYear" };
+
+        private static Task SupplierInvoice(string sText) =>
+            SyncODataEntity(sText, "Op_SupplierInvoice", SupplierInvoiceKeys, new[]
+            {
+                ("SupplierInvoice", S), ("FiscalYear", S), ("CompanyCode", S),
+                ("DocumentDate", D), ("PostingDate", D), ("CreationDate", D), ("SuplrInvcLstChgDteTmeTxt", S),
+                ("SupplierInvoiceIDByInvcgParty", S), ("InvoicingParty", S), ("DocumentCurrency", S),
+                ("InvoiceGrossAmount", N), ("UnplannedDeliveryCost", N), ("DocumentHeaderText", S), ("ReconciliationAccount", S),
+                ("PaymentTerms", S), ("DueCalculationBaseDate", D),
+                ("CashDiscount1Percent", N), ("CashDiscount1Days", N), ("CashDiscount2Percent", N), ("CashDiscount2Days", N), ("NetPaymentDays", N),
+                ("PaymentBlockingReason", S), ("AccountingDocumentType", S), ("JournalEntry", S), ("JournalEntryFiscalYear", S),
+                ("SupplierInvoiceStatus", S), ("DirectQuotedExchangeRate", N), ("PaymentMethod", S), ("PaymentReference", S),
+                ("InvoiceReference", S), ("InvoiceReferenceFiscalYear", S), ("AssignmentReference", S), ("SupplierPostingLineItemText", S),
+                ("TaxIsCalculatedAutomatically", B), ("BusinessPlace", S), ("BusinessArea", S), ("SupplierInvoiceIsCreditMemo", S),
+                ("TaxDeterminationDate", D), ("TaxReportingDate", D), ("TaxFulfillmentDate", D), //--Sukanya 051169
+                ("InvoiceReceiptDate", D), ("AlternativePayeePayer", S), ("SupplierInvoiceOrigin", S),
+                ("ReverseDocument", S), ("ReverseDocumentFiscalYear", S), ("IsReversal", B), ("IsReversed", B),
+                ("SupplierInvoicePaymentStatus", S), ("SupplierInvoiceApprovalStatus", S)
+            }, deleteMissing: true);
+
+        private static Task SuplrInvcItemPurOrdRef(string sText) =>
+            SyncODataEntity(sText, "Op_SuplrInvcItemPurOrdRef", new[] { "SupplierInvoice", "FiscalYear", "SupplierInvoiceItem" }, new[]
+            {
+                ("SupplierInvoice", S), ("FiscalYear", S), ("SupplierInvoiceItem", S),
+                ("PurchaseOrder", S), ("PurchaseOrderItem", S), ("Plant", S),
+                ("ReferenceDocument", S), ("ReferenceDocumentFiscalYear", S), ("ReferenceDocumentItem", S), ("IsSubsequentDebitCredit", S),
+                ("TaxCode", S), ("DocumentCurrency", S), ("SupplierInvoiceItemAmount", N),
+                ("PurchaseOrderQuantityUnit", S), ("QuantityInPurchaseOrderUnit", N), ("PurchaseOrderPriceUnit", S), ("QtyInPurchaseOrderPriceUnit", N),
+                ("SuplrInvcDeliveryCostCndnType", S), ("SupplierInvoiceItemText", S), ("FreightSupplier", S), ("IsNotCashDiscountLiable", B),
+                ("PurchasingDocumentItemCategory", S), ("ProductType", S), ("ServiceEntrySheet", S), ("ServiceEntrySheetItem", S),
+                ("IsFinallyInvoiced", B), ("TaxDeterminationDate", D)
+            }, deleteMissing: true);
+
+        private static Task SupplierInvoiceItemGLAcct(string sText) =>
+            SyncODataEntity(sText, "Op_SupplierInvoiceItemGLAcct", new[] { "SupplierInvoice", "FiscalYear", "SupplierInvoiceItem" }, new[]
+            {
+                ("SupplierInvoice", S), ("FiscalYear", S), ("SupplierInvoiceItem", S),
+                ("CompanyCode", S), ("GLAccount", S), ("CostCenter", S), ("ProfitCenter", S), ("BusinessArea", S), ("FunctionalArea", S),
+                ("InternalOrder", S), ("WBSElement", S), ("SalesOrder", S), ("SalesOrderItem", S), ("DebitCreditCode", S),
+                ("DocumentCurrency", S), ("SupplierInvoiceItemAmount", N), ("TaxCode", S), ("TaxBaseAmountInTransCrcy", N),
+                ("Material", S), ("QuantityUnit", S), ("Quantity", N), ("AssignmentReference", S), ("SupplierInvoiceItemText", S)
+            }, deleteMissing: true);
+
+        private static Task SupplierInvoiceTax(string sText) =>
+            SyncODataEntity(sText, "Op_SupplierInvoiceTax", new[] { "SupplierInvoice", "FiscalYear", "TaxCode", "SupplierInvoiceTaxCounter" }, new[]
+            {
+                ("SupplierInvoice", S), ("FiscalYear", S), ("TaxCode", S), ("SupplierInvoiceTaxCounter", S),
+                ("DocumentCurrency", S), ("TaxAmount", N), ("TaxBaseAmountInTransCrcy", N), ("TaxCountry", S), ("TaxDeterminationDate", D)
+            }, deleteMissing: true);
+
+        private static Task SuplrInvcHeaderWhldgTax(string sText) =>
+            SyncODataEntity(sText, "Op_SuplrInvcHeaderWhldgTax", new[] { "SupplierInvoice", "FiscalYear", "WithholdingTaxType" }, new[]
+            {
+                ("SupplierInvoice", S), ("FiscalYear", S), ("WithholdingTaxType", S),
+                ("DocumentCurrency", S), ("WithholdingTaxCode", S), ("WithholdingTaxBaseAmount", N), ("ManuallyEnteredWhldgTaxAmount", N),
+                ("WhldgTaxIsEnteredManually", B), ("WhldgTaxBaseIsEnteredManually", B)
+            }, deleteMissing: true);
+
+        //GR (API_MATERIAL_DOCUMENT_SRV) //--Sukanya 031169
+        private static Task MaterialDocumentHeader(string sText) =>
+            SyncODataEntity(sText, "Op_MaterialDocumentHeader", new[] { "MaterialDocumentYear", "MaterialDocument" }, new[]
+            {
+                ("MaterialDocumentYear", S), ("MaterialDocument", S), ("InventoryTransactionType", S),
+                ("DocumentDate", D), ("PostingDate", D), ("CreationDate", D), ("CreatedByUser", S),
+                ("MaterialDocumentHeaderText", S), ("ReferenceDocument", S), ("GoodsMovementCode", S)
+            }, yearField: "MaterialDocumentYear");
+
+        // ทุก movement ของ MIGO: GR 101/102/122, GI Z15/201/261, โอนย้าย 311 ฯลฯ //--Sukanya 041169
+        private static Task MaterialDocumentItem(string sText) =>
+            SyncODataEntity(sText, "Op_MaterialDocumentItem", new[] { "MaterialDocumentYear", "MaterialDocument", "MaterialDocumentItem" }, new[]
+            {
+                ("MaterialDocumentYear", S), ("MaterialDocument", S), ("MaterialDocumentItem", S),
+                ("Material", S), ("Plant", S), ("StorageLocation", S), ("Batch", S), ("BatchBySupplier", S),
+                ("GoodsMovementType", S), ("InventoryStockType", S), ("InventorySpecialStockType", S), ("Supplier", S),
+                ("PurchaseOrder", S), ("PurchaseOrderItem", S), ("GoodsMovementRefDocType", S), ("GoodsMovementReasonCode", S),
+                ("Delivery", S), ("DeliveryItem", S), ("AccountAssignmentCategory", S), ("CostCenter", S), ("GLAccount", S),
+                ("MaterialBaseUnit", S), ("QuantityInBaseUnit", N), ("EntryUnit", S), ("QuantityInEntryUnit", N),
+                ("CompanyCodeCurrency", S), ("GdsMvtExtAmtInCoCodeCrcy", N), ("FiscalYear", S), ("FiscalYearPeriod", S),
+                ("IsCompletelyDelivered", B), ("MaterialDocumentItemText", S), ("ShelfLifeExpirationDate", D), ("ManufactureDate", D),
+                ("IsAutomaticallyCreated", S), ("GoodsMovementIsCancelled", B),
+                ("ReversedMaterialDocumentYear", S), ("ReversedMaterialDocument", S), ("ReversedMaterialDocumentItem", S),
+                ("InvtryMgmtReferenceDocument", S), ("InvtryMgmtRefDocumentItem", S), ("ReferenceDocumentFiscalYear", S),
+                ("MaterialDocumentPostingType", S), ("DebitCreditCode", S),
+                ("Customer", S), ("SalesOrder", S), ("SalesOrderItem", S), ("WBSElement", S), ("ProfitCenter", S),
+                ("ManufacturingOrder", S), ("ManufacturingOrderItem", S),
+                ("Reservation", S), ("ReservationItem", S), ("ReservationIsFinallyIssued", B),
+                ("IssgOrRcvgMaterial", S), ("IssgOrRcvgBatch", S), ("IssuingOrReceivingPlant", S),
+                ("IssuingOrReceivingStorageLoc", S), ("IssuingOrReceivingStockType", S),
+                ("GoodsRecipientName", S), ("UnloadingPointName", S)
+            }, yearField: "MaterialDocumentYear");
+
+        //Reservation (API_RESERVATION_DOCUMENT_SRV) //--Sukanya 041169
+        // ไม่มีฟิลด์ปี และยอดเบิก/สถานะเปลี่ยนได้ภายหลัง จึงดึงทั้งหมดทุกรอบ, ใบจองลบใน SAP ได้ จึงเปิด deleteMissing
+        private static Task ReservationDocumentHeader(string sText) =>
+            SyncODataEntity(sText, "Op_ReservationDocumentHeader", new[] { "Reservation" }, new[]
+            {
+                ("Reservation", S), ("OrderID", S), ("GoodsMovementType", S), ("CostCenter", S), ("GoodsRecipientName", S),
+                ("ReservationDate", D), ("Customer", S), ("WBSElement", S), ("ControllingArea", S),
+                ("SalesOrder", S), ("SalesOrderItem", S), ("IssuingOrReceivingPlant", S), ("IssuingOrReceivingStorageLoc", S)
+            }, yearField: null, deleteMissing: true);
+
+        private static Task ReservationDocumentItem(string sText) =>
+            SyncODataEntity(sText, "Op_ReservationDocumentItem", new[] { "Reservation", "ReservationItem", "RecordType" }, new[]
+            {
+                ("Reservation", S), ("ReservationItem", S), ("RecordType", S),
+                ("Product", S), ("RequirementType", S), ("MatlCompRequirementDate", D), ("Plant", S), ("StorageLocation", S), ("Batch", S),
+                ("DebitCreditCode", S), ("GoodsMovementType", S), ("GoodsMovementIsAllowed", B), ("GLAccount", S),
+                ("BaseUnit", S), ("ResvnItmRequiredQtyInBaseUnit", N), ("ResvnItmWithdrawnQtyInBaseUnit", N),
+                ("EntryUnit", S), ("ResvnItmRequiredQtyInEntryUnit", N),
+                ("CompanyCodeCurrency", S), ("ResvnItmWithdrawnAmtInCCCrcy", N),
+                ("ReservationItemIsFinallyIssued", B), ("ReservationItmIsMarkedForDeltn", B),
+                ("IssuingOrReceivingPlant", S), ("IssuingOrReceivingStorageLoc", S),
+                ("PurchasingDocument", S), ("PurchasingDocumentItem", S), ("Supplier", S),
+                ("GoodsRecipientName", S), ("UnloadingPointName", S), ("ReservationItemText", S)
+            }, yearField: null, deleteMissing: true);
+
+        // ดึง entity จาก Setting_SyncData แล้ว upsert ลงตารางตาม key //--Sukanya 031169
+        // ตารางว่าง = โหลดย้อนหลังทั้งหมด, มีข้อมูลแล้ว = sync เฉพาะ yearField ปีปัจจุบันและปีก่อน
+        // yearField = null: ดึงทั้งหมดทุกรอบ (entity ที่ไม่มีฟิลด์ปี เช่น Reservation) //--Sukanya 041169
+        // deleteMissing = ลบแถวในช่วงปีเดียวกันที่ไม่มีใน SAP แล้ว (เช่น invoice ที่ park แล้วถูกลบ)
+        //   ทำเฉพาะเมื่อดึงครบตาม __count และทุก batch สำเร็จ, ถ้าจะลบเกิน 10% ของที่ดึงมาจะไม่ลบและ log Fail
+        private static async Task SyncODataEntity(string dataType, string tableName, string[] keys, (string Name, ColType Type)[] columns,
+            string yearField = "FiscalYear", string extraFilter = null, bool deleteMissing = false)
+        {
+            var batchSql = new StringBuilder();
+            int rowCount = 0;
+
+            try
+            {
+                Console.WriteLine($"{dataType} : start {DateTime.Now:HH:mm:ss}");
+                var helper = new ODataHelper();
+                string _url = SQLConnect.GetStringValue($"SELECT [DataSyntax] FROM [Setting_SyncData] WHERE DataType = '{dataType}' AND IsActive = 1 AND DataSource = 'OData'", "dbDW");
+                if (string.IsNullOrEmpty(_url))
+                {
+                    Console.WriteLine($"{dataType} : ข้าม (ไม่พบใน Setting_SyncData หรือ IsActive = 0)");
+                    return;
+                }
+
+                string fromYear = (DateTime.Today.Year - 1).ToString();
+                bool incremental = SQLConnect.GetStringValue($"SELECT TOP 1 1 FROM {tableName}", "dbDW") != "";
+
+                var filters = new List<string>();
+                if (!string.IsNullOrEmpty(extraFilter))
+                    filters.Add(extraFilter);
+                if (incremental && yearField != null)
+                    filters.Add($"{yearField} ge '{fromYear}'");
+
+                var query = new List<string> { "$select=" + string.Join(",", columns.Select(c => c.Name)), "$inlinecount=allpages" };
+                if (filters.Count > 0)
+                    query.Add("$filter=" + Uri.EscapeDataString(string.Join(" and ", filters)));
+                _url += (_url.Contains("?") ? "&" : "?") + string.Join("&", query);
+
+                DataTable dt = await helper.FetchAllODataAsync(_url, _USERNAME, _PASSWORD, strict: true);
+                if (dt.Rows.Count == 0) return;
+
+                // เวลาเริ่มรอบนี้ (นาฬิกา DB) ทุกแถวที่ upsert รอบนี้จะได้ UpdateDate >= ค่านี้
+                string runStart = SQLConnect.GetStringValue("SELECT CONVERT(varchar(23), GETDATE(), 126)", "dbDW");
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    string where = string.Join(" AND ", keys.Select(k => $"{k} = {ToSqlValue(row, k, S)}"));
+                    var nonKeys = columns.Where(c => !keys.Contains(c.Name)).ToArray();
+
+                    batchSql.AppendLine($@"
+                    IF EXISTS (SELECT 1 FROM {tableName} WHERE {where})
+                        UPDATE {tableName} SET
+                            {string.Join(", ", nonKeys.Select(c => $"{c.Name} = {ToSqlValue(row, c.Name, c.Type)}"))},
+                            UpdateDate = GETDATE()
+                        WHERE {where};
+                    ELSE
+                        INSERT INTO {tableName} ({string.Join(", ", columns.Select(c => c.Name))}, UpdateDate)
+                        VALUES ({string.Join(", ", columns.Select(c => ToSqlValue(row, c.Name, c.Type)))}, GETDATE());");
+
+                    rowCount++;
+                    if (rowCount % 100 == 0)
+                    {
+                        SQLConnect.ExecuteStrict(batchSql.ToString(), "dbDW");
+                        batchSql.Clear();
+                    }
+                }
+
+                if (batchSql.Length > 0)
+                    SQLConnect.ExecuteStrict(batchSql.ToString(), "dbDW");
+
+                string deleteNote = "";
+                if (deleteMissing && incremental)
+                {
+                    string staleWhere = (yearField != null ? $"{yearField} >= '{fromYear}' AND " : "")
+                        + $"(UpdateDate < '{runStart}' OR UpdateDate IS NULL)";
+                    int stale = int.Parse(SQLConnect.GetStringValue($"SELECT COUNT(1) FROM {tableName} WHERE {staleWhere}", "dbDW"));
+
+                    if (stale > rowCount / 10)
+                        throw new Exception($"ยกเลิกการลบ: แถวที่จะลบ {stale} เกิน 10% ของที่ดึงมา {rowCount} แถว ให้ตรวจสอบก่อน");
+
+                    if (stale > 0)
+                        deleteNote = $"Deleted {SQLConnect.ExecuteStrict($"DELETE FROM {tableName} WHERE {staleWhere}", "dbDW")} rows";
+                }
+
+                LogStatus(dataType, "Successful", deleteNote);
+                Console.WriteLine($"{dataType} : Sync Successful ({rowCount} rows) {deleteNote}");
+            }
+            catch (Exception ex)
+            {
+                // batchSql ยังเก็บ batch ที่ error อยู่ (ล้างเฉพาะตอนสำเร็จ) ว่างถ้า error ตอนดึงข้อมูล //--Sukanya 031169
+                LogStatus(dataType, "Fail", ex.Message, batchSql.ToString());
+                Console.WriteLine($"{dataType} : Fail ({rowCount} rows ก่อน error) {ex.Message}");
+            }
+        }
+
+        // เขียน Log_Status โดยไม่ผ่าน Updatedata: Updatedata จะเรียกตัวเองวนไม่จบถ้า insert log ไม่ผ่าน (StackOverflow -> โปรแกรมปิดตัว)
+        // ตัดข้อความตามขนาดคอลัมน์จริง และถ้ายัง log ไม่ได้ให้พิมพ์ที่ Console แทน //--Sukanya 041169
+        private static void LogStatus(string process, string status, string description, string sql = null)
+        {
+            string Fit(string column, string value) =>
+                $"LEFT(N'{(value ?? "").Replace("'", "''")}', CASE WHEN COL_LENGTH('Log_Status','{column}') = -1 THEN 1000000 ELSE COL_LENGTH('Log_Status','{column}') / 2 END)";
+
+            try
+            {
+                string sqlColumn = sql != null ? ",QuerySystax" : "";
+                string sqlValue = sql != null ? "," + Fit("QuerySystax", sql) : "";
+                SQLConnect.ExecuteStrict(
+                    $"INSERT INTO Log_Status(Process,Status,LogDate,LogDescription{sqlColumn}) VALUES (N'{process}',N'{status}',GETDATE(),{Fit("LogDescription", description)}{sqlValue})",
+                    "dbDW");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{process} : เขียน Log_Status ไม่ได้ ({ex.Message})");
+            }
+        }
+
+        //--Sukanya 031169
+        private static string ToSqlValue(DataRow row, string column, ColType type)
+        {
+            if (!row.Table.Columns.Contains(column) || row[column] == DBNull.Value)
+                return type == ColType.Text ? "N''" : "NULL";
+
+            string raw = row[column].ToString();
+            string value = raw.Trim();   // ใช้ตอนแปลงตัวเลข/วันที่/flag เท่านั้น
+            switch (type)
+            {
+                case ColType.Number:
+                    return decimal.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out decimal number)
+                        ? number.ToString(CultureInfo.InvariantCulture) : "NULL";
+                case ColType.Flag:
+                    return value.Equals("True", StringComparison.OrdinalIgnoreCase) ? "1" : "0";
+                case ColType.Date:
+                    // ODataHelper แปลง /Date(...)/ เป็น DateTime แล้ว ToString ตาม culture ของเครื่อง (เช่น th-TH ปี พ.ศ.)
+                    return DateTime.TryParse(value, CultureInfo.CurrentCulture, DateTimeStyles.None, out DateTime date)
+                        ? $"'{date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}'" : "NULL";
+                default:
+                    // ข้อความเก็บตาม SAP ทุกตัวอักษร ไม่ตัดช่องว่างหน้า-หลัง (EscapeSql จะ Trim จึงไม่ใช้) //--Sukanya 051169
+                    return $"N'{raw.Replace("'", "''")}'";
             }
         }
 

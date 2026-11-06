@@ -14,9 +14,12 @@ namespace BIS_INTERFACE_BC
     class ODataHelper
     {
 
-        public async Task<DataTable> FetchAllODataAsync(string firstUrl, string username, string password)
+        // strict = true: โยน exception เมื่อดึงไม่สำเร็จ และถ้า URL มี $inlinecount=allpages จะเช็กว่าจำนวนแถวครบตาม __count //--Sukanya 031169
+        // (ค่าเริ่มต้น false = พฤติกรรมเดิม คืนข้อมูลเท่าที่ได้โดยไม่แจ้ง error)
+        public async Task<DataTable> FetchAllODataAsync(string firstUrl, string username, string password, bool strict = false)
         {
             var dtAll = new DataTable("OData");
+            string expectedCount = null; //--Sukanya 031169
             try
             {
                 var handler = new HttpClientHandler
@@ -67,6 +70,9 @@ namespace BIS_INTERFACE_BC
                         // ====== หา nextLink ======
                         var root = JObject.Parse(json);
 
+                        if (expectedCount == null) //--Sukanya 031169
+                            expectedCount = (string)root.SelectToken("d.__count");
+
                         // ลองทั้งแบบ V2 (__next) และ V4 (@odata.nextLink)
                         string nextLink =
                             (string)root.SelectToken("d.__next") ??
@@ -92,10 +98,14 @@ namespace BIS_INTERFACE_BC
                     }
                 }
 
+                if (strict && expectedCount != null && expectedCount != dtAll.Rows.Count.ToString()) //--Sukanya 031169
+                    throw new Exception($"ดึงข้อมูลไม่ครบ: ได้ {dtAll.Rows.Count} แถว จาก __count {expectedCount} ({firstUrl})");
+
                 return dtAll;
             }
-            catch (Exception e)
+            catch (Exception)
             {
+                if (strict) throw; //--Sukanya 031169
                 return dtAll;
             }
 

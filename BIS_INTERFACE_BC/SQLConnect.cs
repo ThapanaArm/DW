@@ -72,6 +72,22 @@ namespace BIS_INTERFACE_BC
             }
             return dataTable;
         }
+
+        // ต่างจาก Updatedata ตรงที่โยน exception ออกไปเมื่อ error และคืนจำนวนแถวที่ได้รับผล //--Sukanya 031169
+        public static int ExecuteStrict(string query, string DB)
+        {
+            if (DB != "dbDW")
+                throw new Exception("ไม่พบชื่อ DB");
+
+            using (SqlConnection con = new SqlConnection(ConfigurationManager.ConnectionStrings["dbDW"].ConnectionString))
+            using (SqlCommand cmd = new SqlCommand(query, con))
+            {
+                cmd.CommandTimeout = 120;
+                con.Open();
+                return cmd.ExecuteNonQuery();
+            }
+        }
+
         public static string Updatedata(String query, String DB)
         {
 
