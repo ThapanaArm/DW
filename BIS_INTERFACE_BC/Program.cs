@@ -1516,7 +1516,7 @@ namespace BIS_INTERFACE_BC
                         [RequestedDeliveryDate],[CustomerPaymentTerms],[OverallISDProcessStatus],[OverallTotalDeliveryStatus],[BillingDoucumentDate]
                     ) VALUES (
                         '{soNumber}', 'S4HC', '{row["SalesOrderDate"]}', '{row["SalesOrderType"]}', '{row["SalesOrderTypeInternalCode"]}', '{row["SalesOrganization"]}', 
-                        '{row["DistributionChannel"]}', '{row["SalesGroup"]}', '{row["SalesOffice"]}', '{row["SalesDistrict"]}', '{row["SoldToParty"]}', '{row["PurchaseOrderByCustomer"]}', 
+                        '{row["DistributionChannel"]}', '{row["SalesGroup"]}', '{row["SalesOffice"]}', '{row["SalesDistrict"]}', '{row["SoldToParty"]}', '{row["PurchaseOrderByCustomer"]}',
                         '{row["TotalNetAmount"]}', '{row["OverallDeliveryStatus"]}', '{row["TransactionCurrency"]}', '{row["PricingDate"]}', '{row["PriceDetnExchangeRate"]}', 
                         '{row["RequestedDeliveryDate"]}', '{row["CustomerPaymentTerms"]}', '{row["OverallSDProcessStatus"]}', '{row["OverallTotalDeliveryStatus"]}', '{row["BillingDocumentDate"]}'
                     );
@@ -2661,9 +2661,9 @@ namespace BIS_INTERFACE_BC
                     string documentCurrency = row["DocumentCurrency"].ToString();
                     string exchangeRate = row["ExchangeRate"].ToString();
                     string exchangeRateIsFixed = row["ExchangeRateIsFixed"].ToString() == "True" ? "1" : "0";
-                    string creationDate = row["CreationDate"].ToString();
-                    string lastChangeDateTime = row["LastChangeDateTime"].ToString();
-                    string poDate = row["PurchaseOrderDate"].ToString();
+                    string creationDate = SqlDate(row["CreationDate"]);             //--Sukanya 061169 11:43 แปลงวันที่เป็น ISO (เดิม ToString ตรง ๆ)
+                    string lastChangeDateTime = SqlDate(row["LastChangeDateTime"]); //--Sukanya 061169 11:43
+                    string poDate = SqlDate(row["PurchaseOrderDate"]);              //--Sukanya 061169 11:43
                     string incoterms = row["IncotermsClassification"].ToString();
                     string incotermsLoc1 = row["IncotermsLocation1"].ToString().Replace("'", "''");
                     string incotermsLoc2 = row["IncotermsLocation2"].ToString().Replace("'", "''");
@@ -2866,13 +2866,9 @@ namespace BIS_INTERFACE_BC
                     string freeItem = row["PurchasingItemIsFreeOfCharge"].ToString() == "True" ? "1" : "0";
                     string overPct = row["OverdelivTolrtdLmtRatioInPct"].ToString();
                     string underPct = row["UnderdelivTolrtdLmtRatioInPct"].ToString();
-                    string taxDate = string.IsNullOrEmpty(row["TaxDeterminationDate"].ToString())
-                        ? "NULL"
-                        : $"'{row["TaxDeterminationDate"]}'";
+                    string taxDate = SqlDateOrNull(row["TaxDeterminationDate"]); //--Sukanya 061169 11:43 แปลงวันที่เป็น ISO (เดิม ToString ตรง ๆ)
 
-                    string dpDate = string.IsNullOrEmpty(row["DownPaymentDueDate"].ToString())
-                        ? "NULL"
-                        : $"'{row["DownPaymentDueDate"]}'";
+                    string dpDate = SqlDateOrNull(row["DownPaymentDueDate"]);    //--Sukanya 061169 11:43
 
                     batchSql.AppendLine($@"
                     IF EXISTS (
@@ -3222,7 +3218,7 @@ namespace BIS_INTERFACE_BC
 
                     // ===== Value fields =====
                     string delivCat = row["DelivDateCategory"]?.ToString().Replace("'", "''");
-                    string delivDate = row["ScheduleLineDeliveryDate"]?.ToString();
+                    string delivDate = SqlDate(row["ScheduleLineDeliveryDate"]); //--Sukanya 061169 11:43 แปลงวันที่เป็น ISO (เดิม ToString ตรง ๆ)
                     string unit = row["PurchaseOrderQuantityUnit"]?.ToString().Replace("'", "''");
 
                     string orderQty = string.IsNullOrWhiteSpace(
@@ -3230,7 +3226,7 @@ namespace BIS_INTERFACE_BC
                     ) ? "0" : row["ScheduleLineOrderQuantity"].ToString();
 
                     string delivTime = row["ScheduleLineDeliveryTime"]?.ToString();
-                    string stscDate = row["SchedLineStscDeliveryDate"]?.ToString();
+                    string stscDate = SqlDate(row["SchedLineStscDeliveryDate"]); //--Sukanya 061169 11:43
                     string pr = row["PurchaseRequisition"]?.ToString().Replace("'", "''");
                     string prItem = row["PurchaseRequisitionItem"]?.ToString().Replace("'", "''");
 
@@ -3238,8 +3234,8 @@ namespace BIS_INTERFACE_BC
                         row["ScheduleLineCommittedQuantity"]?.ToString()
                     ) ? "0" : row["ScheduleLineCommittedQuantity"].ToString();
 
-                    string perfStart = row["PerformancePeriodStartDate"]?.ToString();
-                    string perfEnd = row["PerformancePeriodEndDate"]?.ToString();
+                    string perfStart = SqlDate(row["PerformancePeriodStartDate"]); //--Sukanya 061169 11:43
+                    string perfEnd = SqlDate(row["PerformancePeriodEndDate"]);     //--Sukanya 061169 11:43
 
                     batchSql.AppendLine($@"
                     IF EXISTS (
@@ -3374,7 +3370,7 @@ namespace BIS_INTERFACE_BC
                     string percent = string.IsNullOrWhiteSpace(row["MultipleAcctAssgmtDistrPercent"]?.ToString()) ? "0" : row["MultipleAcctAssgmtDistrPercent"].ToString();
                     string isDeleted = row["IsDeleted"]?.ToString() == "true" ? "1" : "0";
 
-                    string settleDate = row["SettlementReferenceDate"]?.ToString();
+                    string settleDate = SqlDate(row["SettlementReferenceDate"]); //--Sukanya 061169 11:43 แปลงวันที่เป็น ISO (เดิม ToString ตรง ๆ)
 
                     batchSql.AppendLine($@"
                     IF EXISTS (
@@ -3773,8 +3769,13 @@ namespace BIS_INTERFACE_BC
                     string grExp = row["GoodsReceiptIsExpected"]?.ToString() == "true" ? "1" : "0";
                     string invExp = row["InvoiceIsExpected"]?.ToString() == "true" ? "1" : "0";
 
-                    string delivDate = row["DeliveryDate"]?.ToString();
-                    string lastChange = row["LastChangeDateTime"]?.ToString();
+                    string delivDate = SqlDate(row["DeliveryDate"]);         //--Sukanya 061169 11:43 แปลงวันที่เป็น ISO (เดิม ToString ตรง ๆ)
+                    string lastChange = SqlDate(row["LastChangeDateTime"]);  //--Sukanya 061169 11:43
+
+                    // escape ' ในข้อความ (เช่น PR 1280000321/10 "ST JOHN'S WORT..." ทำให้ batch ที่ 22 syntax error -> Updatedata ค้าง, ได้แค่ 2100 จาก 3480 แถว) //--Sukanya 061169 11:37
+                    // ใช้แทน row["PurchaseRequisitionItemText"] / row["Material"] ใน UPDATE และ INSERT ด้านล่าง //--Sukanya 061169 11:37
+                    string itemText = row["PurchaseRequisitionItemText"]?.ToString().Replace("'", "''"); //--Sukanya 061169 11:37
+                    string material = row["Material"]?.ToString().Replace("'", "''");                    //--Sukanya 061169 11:37
 
                     batchSql.AppendLine($@"
             IF EXISTS (
@@ -3784,8 +3785,8 @@ namespace BIS_INTERFACE_BC
             )
             BEGIN
                 UPDATE Op_PurchaseRequisitionItem SET
-                    PurchaseRequisitionItemText = N'{row["PurchaseRequisitionItemText"]}',
-                    Material = N'{row["Material"]}',
+                    PurchaseRequisitionItemText = N'{itemText}',
+                    Material = N'{material}',
                     RequestedQuantity = {reqQty},
                     PurchaseRequisitionPrice = {price},
                     ItemNetAmount = {netAmt},
@@ -3819,8 +3820,8 @@ namespace BIS_INTERFACE_BC
                 ) VALUES (
                     N'{pr}',
                     N'{item}',
-                    N'{row["PurchaseRequisitionItemText"]}',
-                    N'{row["Material"]}',
+                    N'{itemText}',
+                    N'{material}',
                     {reqQty},
                     {price},
                     {netAmt},
@@ -3898,6 +3899,12 @@ namespace BIS_INTERFACE_BC
 
                     string poBoxNoNum = row["POBoxIsWithoutNumber"]?.ToString() == "true" ? "1" : "0";
 
+                    // escape ' ในชื่อ/เมือง (ป้องกัน syntax error -> Updatedata ค้าง แบบ PurchaseRequisitionItem) //--Sukanya 061169 11:37
+                    // ใช้แทน row["FullName"] / row["CityName"] / row["CitySearch"] ใน UPDATE และ INSERT ด้านล่าง //--Sukanya 061169 11:37
+                    string fullName = row["FullName"]?.ToString().Replace("'", "''");     //--Sukanya 061169 11:37
+                    string cityName = row["CityName"]?.ToString().Replace("'", "''");     //--Sukanya 061169 11:37
+                    string citySearch = row["CitySearch"]?.ToString().Replace("'", "''"); //--Sukanya 061169 11:37
+
                     batchSql.AppendLine($@"
             IF EXISTS (
                 SELECT 1
@@ -3912,9 +3919,9 @@ namespace BIS_INTERFACE_BC
                     ManualDeliveryAddressID = N'{row["ManualDeliveryAddressID"]}',
                     Plant = N'{row["Plant"]}',
                     AddressType = N'{row["AddressType"]}',
-                    FullName = N'{row["FullName"]}',
-                    CityName = N'{row["CityName"]}',
-                    CitySearch = N'{row["CitySearch"]}',
+                    FullName = N'{fullName}',
+                    CityName = N'{cityName}',
+                    CitySearch = N'{citySearch}',
                     Country = N'{row["Country"]}',
                     CorrespondenceLanguage = N'{row["CorrespondenceLanguage"]}',
                     POBoxIsWithoutNumber = {poBoxNoNum},
@@ -3947,9 +3954,9 @@ namespace BIS_INTERFACE_BC
                     N'{row["ManualDeliveryAddressID"]}',
                     N'{row["Plant"]}',
                     N'{row["AddressType"]}',
-                    N'{row["FullName"]}',
-                    N'{row["CityName"]}',
-                    N'{row["CitySearch"]}',
+                    N'{fullName}',
+                    N'{cityName}',
+                    N'{citySearch}',
                     N'{row["Country"]}',
                     N'{row["CorrespondenceLanguage"]}',
                     {poBoxNoNum},
@@ -4685,6 +4692,26 @@ namespace BIS_INTERFACE_BC
             {
                 Console.WriteLine($"{process} : เขียน Log_Status ไม่ได้ ({ex.Message})");
             }
+        }
+
+        // แปลงวันที่จาก OData เป็น ISO 8601 (yyyy-MM-ddTHH:mm:ss) ที่ SQL Server อ่านถูกเสมอไม่ว่า DATEFORMAT/ภาษาของ login //--Sukanya 061169 11:43
+        // เดิมส่ง row[...].ToString() ตรง ๆ ซึ่งได้รูปแบบตาม Region ของเครื่องที่รัน เช่นเครื่องที่ตั้ง dd/MM/yyyy ได้ '22/10/2025 00:00:00'
+        //   -> SQL (us_english = mdy) อ่านเป็น เดือน/วัน -> วันที่ <= 12 สลับวัน-เดือน, วันที่ > 12 error
+        // ค่าใน DataTable เกิดจาก ToString ตาม culture ของเครื่อง จึง parse กลับด้วย CurrentCulture (แบบเดียวกับ ToSqlValue) ได้ถูกทุกเครื่อง
+        // คืน "" ถ้าว่าง/แปลงไม่ได้ (ให้โค้ดเดิมที่เช็ก IsNullOrEmpty -> NULL ทำงานเหมือนเดิม)
+        private static string SqlDate(object value)
+        {
+            string text = value?.ToString().Trim();
+            if (string.IsNullOrEmpty(text)) return "";
+            return DateTime.TryParse(text, CultureInfo.CurrentCulture, DateTimeStyles.None, out DateTime date)
+                ? date.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture) : "";
+        }
+
+        // เหมือน SqlDate แต่คืนเป็น SQL literal พร้อมใช้: 'yyyy-MM-ddTHH:mm:ss' หรือ NULL //--Sukanya 061169 11:43
+        private static string SqlDateOrNull(object value)
+        {
+            string date = SqlDate(value);
+            return date == "" ? "NULL" : $"'{date}'";
         }
 
         //--Sukanya 031169
