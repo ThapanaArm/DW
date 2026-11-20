@@ -22,7 +22,6 @@ namespace BIS_INTERFACE_BC
         static async Task Main()
         { // รันงาน sync แบบ block ให้จบก่อน
 
-<<<<<<< HEAD
             //Product
             await Product("Product");
             await ProductDescription("ProductDescription");
@@ -58,46 +57,9 @@ namespace BIS_INTERFACE_BC
             //Billing
             await AddBilling("Billing");
             await UpdateBilling("Billing");
-=======
-            ////Product
-            //await Product("Product");
-            //await ProductDescription("ProductDescription");
-            //await ProductPlant("ProductPlant");
-            //await ProductPlantProcurement("ProductPlantProcurement"); //ปรับถึงนี้
-            //await ProductSalesDelivery("ProductPlantProcurement");
-            //await ProductSalesTax("ProductSalesTax");
-            //await ProductStorage("ProductStorage");
-            //await ProductUnitsOfMeasure("ProductUnitsOfMeasure");
-
-
-            ////Business Partner
-            //await BusinessPartner("BusinessPartner");
-            //await BusinessPartnerAddress("BusinessPartnerAddress");
-            //await BusinessPartnerEmail("BusinessPartnerEmail");
-            //await BusinessPartnerPhone("BusinessPartnerPhone");
-            //await BusinnessPartnerCustomer("BusinnessPartnerCustomer");
-            //await BusinnessPartnerCustomerCompany("BusinnessPartnerCustomerCompany");
-            //await BusinnessPartnerCustomerSalesaArea("BusinnessPartnerCustomerSalesaArea");
-            //await BusinessPartnerCustSalesPartnerFunc("BusinessPartnerCustSalesPartnerFunc");
-            //await BusinessPartnerCustSalesSupplier("BusinessPartnerCustSalesSupplier"); //--Kamonwan 050269
-            //await BusinessPartnerCustSalesSupplierCompany("BusinessPartnerCustSalesSupplierCompany"); //--Kamonwan 060269
-
-
-            ////Sales Order
-            //await AddSalesOrder("SalesOrder");
-            //await UpdateSalesOrder("SalesOrder");
-            //await RecheckcSalesOrderHeaderPartner("Recheck");
-
-
-            ////OutbDelivery
-            //await AddOutbDelivery("OutbDelivery");
-            ////Billing
-            //await AddBilling("Billing");
-            //await UpdateBilling("Billing");
->>>>>>> for push
 
             //MaterialStock
-            //await MaterialStockInAcctMod("MaterialStockInAcctMod"); //--Kamonwan 060269
+            await MaterialStockInAcctMod("MaterialStockInAcctMod"); //--Kamonwan 060269
 
             //Purchase 
             await PurchaseOrder("PurchaseOrder"); //--Kamonwan 060269
@@ -111,8 +73,8 @@ namespace BIS_INTERFACE_BC
             await PurchaseRequisitionItem("PurchaseRequisitionItem"); //--Kamonwan 060269
             await PurReqAddDelivery("PurReqAddDelivery"); //--Kamonwan 060269
             await PurReqnAcctAssgmt("PurReqnAcctAssgmt"); //--Kamonwan 060269
-            //await InboundDeliveryHeader("InboundDeliveryHeader"); //--Kamonwan 060269
-            //await InboundDeliveryItem("InboundDeliveryItem"); //--Kamonwan 060269
+            await InboundDeliveryHeader("InboundDeliveryHeader"); //--Kamonwan 060269
+            await InboundDeliveryItem("InboundDeliveryItem"); //--Kamonwan 060269
 
             //Supplier Invoice
             await SupplierInvoice("SupplierInvoice"); //--Sukanya 031169
@@ -1516,7 +1478,7 @@ namespace BIS_INTERFACE_BC
                         [RequestedDeliveryDate],[CustomerPaymentTerms],[OverallISDProcessStatus],[OverallTotalDeliveryStatus],[BillingDoucumentDate]
                     ) VALUES (
                         '{soNumber}', 'S4HC', '{row["SalesOrderDate"]}', '{row["SalesOrderType"]}', '{row["SalesOrderTypeInternalCode"]}', '{row["SalesOrganization"]}', 
-                        '{row["DistributionChannel"]}', '{row["SalesGroup"]}', '{row["SalesOffice"]}', '{row["SalesDistrict"]}', '{row["SoldToParty"]}', '{row["PurchaseOrderByCustomer"]}',
+                        '{row["DistributionChannel"]}', '{row["SalesGroup"]}', '{row["SalesOffice"]}', '{row["SalesDistrict"]}', '{row["SoldToParty"]}', '{row["PurchaseOrderByCustomer"]}', 
                         '{row["TotalNetAmount"]}', '{row["OverallDeliveryStatus"]}', '{row["TransactionCurrency"]}', '{row["PricingDate"]}', '{row["PriceDetnExchangeRate"]}', 
                         '{row["RequestedDeliveryDate"]}', '{row["CustomerPaymentTerms"]}', '{row["OverallSDProcessStatus"]}', '{row["OverallTotalDeliveryStatus"]}', '{row["BillingDocumentDate"]}'
                     );
@@ -2799,7 +2761,6 @@ namespace BIS_INTERFACE_BC
                 Console.WriteLine(ex.Message);
             }
         }
-
         private static async Task PurchaseOrderItem(string sText)
         {
             var batchSql = new StringBuilder();
@@ -3744,12 +3705,12 @@ namespace BIS_INTERFACE_BC
 
                 // 1. Get URL
                 _url = SQLConnect.GetStringValue(@"
-            SELECT DataSyntax
-            FROM Setting_SyncData
-            WHERE DataType = 'PurchaseRequisitionItem'
-              AND IsActive = 1
-              AND DataSource = 'OData'
-        ", "dbDW");
+    SELECT DataSyntax
+    FROM Setting_SyncData
+    WHERE DataType = 'PurchaseRequisitionItem'
+      AND IsActive = 1
+      AND DataSource = 'OData'
+", "dbDW");
 
                 // 2. Fetch OData
                 DataTable dt = await helper.FetchAllODataAsync(_url, _USERNAME, _PASSWORD);
@@ -3778,63 +3739,63 @@ namespace BIS_INTERFACE_BC
                     string material = row["Material"]?.ToString().Replace("'", "''");                    //--Sukanya 061169 11:37
 
                     batchSql.AppendLine($@"
-            IF EXISTS (
-                SELECT 1 FROM Op_PurchaseRequisitionItem
-                WHERE PurchaseRequisition = N'{pr}'
-                  AND PurchaseRequisitionItem = N'{item}'
-            )
-            BEGIN
-                UPDATE Op_PurchaseRequisitionItem SET
-                    PurchaseRequisitionItemText = N'{itemText}',
-                    Material = N'{material}',
-                    RequestedQuantity = {reqQty},
-                    PurchaseRequisitionPrice = {price},
-                    ItemNetAmount = {netAmt},
-                    IsClosed = {isClosed},
-                    ReleaseIsNotCompleted = {relNotComp},
-                    GoodsReceiptIsExpected = {grExp},
-                    InvoiceIsExpected = {invExp},
-                    DeliveryDate = {(string.IsNullOrEmpty(delivDate) ? "NULL" : $"'{delivDate}'")},
-                    LastChangeDateTime = {(string.IsNullOrEmpty(lastChange) ? "NULL" : $"'{lastChange}'")},
-                    UpdateDate = GETDATE()
-                WHERE PurchaseRequisition = N'{pr}'
-                  AND PurchaseRequisitionItem = N'{item}';
-            END
-            ELSE
-            BEGIN
-                INSERT INTO Op_PurchaseRequisitionItem (
-                    PurchaseRequisition,
-                    PurchaseRequisitionItem,
-                    PurchaseRequisitionItemText,
-                    Material,
-                    RequestedQuantity,
-                    PurchaseRequisitionPrice,
-                    ItemNetAmount,
-                    IsClosed,
-                    ReleaseIsNotCompleted,
-                    GoodsReceiptIsExpected,
-                    InvoiceIsExpected,
-                    DeliveryDate,
-                    LastChangeDateTime,
-                    UpdateDate
-                ) VALUES (
-                    N'{pr}',
-                    N'{item}',
-                    N'{itemText}',
-                    N'{material}',
-                    {reqQty},
-                    {price},
-                    {netAmt},
-                    {isClosed},
-                    {relNotComp},
-                    {grExp},
-                    {invExp},
-                    {(string.IsNullOrEmpty(delivDate) ? "NULL" : $"'{delivDate}'")},
-                    {(string.IsNullOrEmpty(lastChange) ? "NULL" : $"'{lastChange}'")},
-                    GETDATE()
-                );
-            END
-            ");
+    IF EXISTS (
+        SELECT 1 FROM Op_PurchaseRequisitionItem
+        WHERE PurchaseRequisition = N'{pr}'
+          AND PurchaseRequisitionItem = N'{item}'
+    )
+    BEGIN
+        UPDATE Op_PurchaseRequisitionItem SET
+            PurchaseRequisitionItemText = N'{itemText}',
+            Material = N'{material}',
+            RequestedQuantity = {reqQty},
+            PurchaseRequisitionPrice = {price},
+            ItemNetAmount = {netAmt},
+            IsClosed = {isClosed},
+            ReleaseIsNotCompleted = {relNotComp},
+            GoodsReceiptIsExpected = {grExp},
+            InvoiceIsExpected = {invExp},
+            DeliveryDate = {(string.IsNullOrEmpty(delivDate) ? "NULL" : $"'{delivDate}'")},
+            LastChangeDateTime = {(string.IsNullOrEmpty(lastChange) ? "NULL" : $"'{lastChange}'")},
+            UpdateDate = GETDATE()
+        WHERE PurchaseRequisition = N'{pr}'
+          AND PurchaseRequisitionItem = N'{item}';
+    END
+    ELSE
+    BEGIN
+        INSERT INTO Op_PurchaseRequisitionItem (
+            PurchaseRequisition,
+            PurchaseRequisitionItem,
+            PurchaseRequisitionItemText,
+            Material,
+            RequestedQuantity,
+            PurchaseRequisitionPrice,
+            ItemNetAmount,
+            IsClosed,
+            ReleaseIsNotCompleted,
+            GoodsReceiptIsExpected,
+            InvoiceIsExpected,
+            DeliveryDate,
+            LastChangeDateTime,
+            UpdateDate
+        ) VALUES (
+            N'{pr}',
+            N'{item}',
+            N'{itemText}',
+            N'{material}',
+            {reqQty},
+            {price},
+            {netAmt},
+            {isClosed},
+            {relNotComp},
+            {grExp},
+            {invExp},
+            {(string.IsNullOrEmpty(delivDate) ? "NULL" : $"'{delivDate}'")},
+            {(string.IsNullOrEmpty(lastChange) ? "NULL" : $"'{lastChange}'")},
+            GETDATE()
+        );
+    END
+    ");
 
                     rowCount++;
 
@@ -3860,15 +3821,14 @@ namespace BIS_INTERFACE_BC
                 string err = ex.Message.Replace("'", "''");
 
                 SQLConnect.Updatedata($@"
-            INSERT INTO Log_Status(Process,Status,LogDate,LogDescription)
-            VALUES ('PurchaseRequisitionItem','Fail',GETDATE(),'{err}')
-        ", "dbDW");
+    INSERT INTO Log_Status(Process,Status,LogDate,LogDescription)
+    VALUES ('PurchaseRequisitionItem','Fail',GETDATE(),'{err}')
+", "dbDW");
 
                 Console.WriteLine(ex.Message);
                 Console.WriteLine(batchSql.ToString());
             }
         }
-
         private static async Task PurReqAddDelivery(string sText)
         {
             var batchSql = new StringBuilder();
@@ -4458,7 +4418,6 @@ namespace BIS_INTERFACE_BC
             }
         }
 
-<<<<<<< HEAD
         //Supplier Invoice (API_SUPPLIERINVOICE_PROCESS_SRV) //--Sukanya 031169
         private enum ColType { Text, Number, Date, Flag }
         private const ColType S = ColType.Text, N = ColType.Number, D = ColType.Date, B = ColType.Flag;
@@ -4739,10 +4698,7 @@ namespace BIS_INTERFACE_BC
             }
         }
 
-       
-=======
 
->>>>>>> for push
     }
 
 }
