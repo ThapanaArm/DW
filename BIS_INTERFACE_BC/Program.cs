@@ -22,29 +22,37 @@ namespace BIS_INTERFACE_BC
         static async Task Main()
         { // รันงาน sync แบบ block ให้จบก่อน
 
-            //Product
-            await Product("Product");
-            await ProductDescription("ProductDescription");
-            await ProductPlant("ProductPlant");
-            await ProductPlantProcurement("ProductPlantProcurement"); //ปรับถึงนี้
-            await ProductSalesDelivery("ProductPlantProcurement");
-            await ProductSalesTax("ProductSalesTax");
-            await ProductStorage("ProductStorage");
-            await ProductUnitsOfMeasure("ProductUnitsOfMeasure");
+            // TODO ชั่วคราว: BackfillOnly = true -> รันเฉพาะ Sales Order / OutbDelivery / Billing เพื่อ backfill ข้อมูลที่เพี้ยนจากการรันวันที่ 20 พ.ย. 2026
+            // รันเสร็จแล้วเปลี่ยนเป็น false (และ BackfillFromDate เป็น null) //--Sukanya 231169
+            bool BackfillOnly = false; // ไม่ใช้ const เพื่อไม่ให้ขึ้น warning "Unreachable code detected"
+
+            if (!BackfillOnly)
+            {
+                //Product
+                await Product("Product");
+                await ProductDescription("ProductDescription");
+                await ProductPlant("ProductPlant");
+                await ProductPlantProcurement("ProductPlantProcurement"); //ปรับถึงนี้
+                await ProductSalesDelivery("ProductPlantProcurement");
+                await ProductSalesTax("ProductSalesTax");
+                await ProductStorage("ProductStorage");
+                await ProductUnitsOfMeasure("ProductUnitsOfMeasure");
 
 
-            //Business Partner
-            await BusinessPartner("BusinessPartner");
-            await BusinessPartnerAddress("BusinessPartnerAddress");
-            await BusinessPartnerEmail("BusinessPartnerEmail");
-            await BusinessPartnerPhone("BusinessPartnerPhone");
-            await BusinnessPartnerCustomer("BusinnessPartnerCustomer");
-            await BusinnessPartnerCustomerCompany("BusinnessPartnerCustomerCompany");
-            await BusinnessPartnerCustomerSalesaArea("BusinnessPartnerCustomerSalesaArea");
-            await BusinessPartnerCustSalesPartnerFunc("BusinessPartnerCustSalesPartnerFunc");
-            await BusinessPartnerCustSalesSupplier("BusinessPartnerCustSalesSupplier"); //--Kamonwan 050269
-            await BusinessPartnerCustSalesSupplierCompany("BusinessPartnerCustSalesSupplierCompany"); //--Kamonwan 060269
+                //Business Partner
+                await BusinessPartner("BusinessPartner");
+                await BusinessPartnerAddress("BusinessPartnerAddress");
+                await BusinessPartnerEmail("BusinessPartnerEmail");
+                await BusinessPartnerPhone("BusinessPartnerPhone");
+                await BusinnessPartnerCustomer("BusinnessPartnerCustomer");
+                await BusinnessPartnerCustomerCompany("BusinnessPartnerCustomerCompany");
+                await BusinnessPartnerCustomerSalesaArea("BusinnessPartnerCustomerSalesaArea");
+                await BusinessPartnerCustSalesPartnerFunc("BusinessPartnerCustSalesPartnerFunc");
+                await BusinessPartnerCustSalesSupplier("BusinessPartnerCustSalesSupplier"); //--Kamonwan 050269
+                await BusinessPartnerCustSalesSupplierCompany("BusinessPartnerCustSalesSupplierCompany"); //--Kamonwan 060269
 
+
+            }
 
             //Sales Order
             await AddSalesOrder("SalesOrder");
@@ -58,38 +66,41 @@ namespace BIS_INTERFACE_BC
             await AddBilling("Billing");
             await UpdateBilling("Billing");
 
-            //MaterialStock
-            await MaterialStockInAcctMod("MaterialStockInAcctMod"); //--Kamonwan 060269
+            if (!BackfillOnly)
+            {
+                //MaterialStock
+                await MaterialStockInAcctMod("MaterialStockInAcctMod"); //--Kamonwan 060269
 
-            //Purchase 
-            await PurchaseOrder("PurchaseOrder"); //--Kamonwan 060269
-            await PurchaseOrderItem("PurchaseOrderItem"); //--Kamonwan 060269
-            await PurchaseOrderItemNote("PurchaseOrderItemNote"); //--Kamonwan 060269
-            await PurchaseOrderNote("PurchaseOrderNote"); //--Kamonwan 060269
-            await PurchaseOrderScheduleLine("PurchaseOrderScheduleLine"); //--Kamonwan 060269
-            await PurOrdAccountAssignment("PurOrdAccountAssignment"); //--Kamonwan 060269
-            await PurOrdPricingElement("PurOrdPricingElement"); //--Kamonwan 060269
-            await PurchaseRequisitionHeader("PurchaseRequisitionHeader"); //--Kamonwan 060269
-            await PurchaseRequisitionItem("PurchaseRequisitionItem"); //--Kamonwan 060269
-            await PurReqAddDelivery("PurReqAddDelivery"); //--Kamonwan 060269
-            await PurReqnAcctAssgmt("PurReqnAcctAssgmt"); //--Kamonwan 060269
-            await InboundDeliveryHeader("InboundDeliveryHeader"); //--Kamonwan 060269
-            await InboundDeliveryItem("InboundDeliveryItem"); //--Kamonwan 060269
+                //Purchase 
+                await PurchaseOrder("PurchaseOrder"); //--Kamonwan 060269
+                await PurchaseOrderItem("PurchaseOrderItem"); //--Kamonwan 060269
+                await PurchaseOrderItemNote("PurchaseOrderItemNote"); //--Kamonwan 060269
+                await PurchaseOrderNote("PurchaseOrderNote"); //--Kamonwan 060269
+                await PurchaseOrderScheduleLine("PurchaseOrderScheduleLine"); //--Kamonwan 060269
+                await PurOrdAccountAssignment("PurOrdAccountAssignment"); //--Kamonwan 060269
+                await PurOrdPricingElement("PurOrdPricingElement"); //--Kamonwan 060269
+                await PurchaseRequisitionHeader("PurchaseRequisitionHeader"); //--Kamonwan 060269
+                await PurchaseRequisitionItem("PurchaseRequisitionItem"); //--Kamonwan 060269
+                await PurReqAddDelivery("PurReqAddDelivery"); //--Kamonwan 060269
+                await PurReqnAcctAssgmt("PurReqnAcctAssgmt"); //--Kamonwan 060269
+                await InboundDeliveryHeader("InboundDeliveryHeader"); //--Kamonwan 060269
+                await InboundDeliveryItem("InboundDeliveryItem"); //--Kamonwan 060269
 
-            //Supplier Invoice
-            await SupplierInvoice("SupplierInvoice"); //--Sukanya 031169
-            await SuplrInvcItemPurOrdRef("SuplrInvcItemPurOrdRef"); //--Sukanya 031169
-            await SupplierInvoiceItemGLAcct("SupplierInvoiceItemGLAcct"); //--Sukanya 031169
-            await SupplierInvoiceTax("SupplierInvoiceTax"); //--Sukanya 031169
-            await SuplrInvcHeaderWhldgTax("SuplrInvcHeaderWhldgTax"); //--Sukanya 031169
+                //Supplier Invoice
+                await SupplierInvoice("SupplierInvoice"); //--Sukanya 031169
+                await SuplrInvcItemPurOrdRef("SuplrInvcItemPurOrdRef"); //--Sukanya 031169
+                await SupplierInvoiceItemGLAcct("SupplierInvoiceItemGLAcct"); //--Sukanya 031169
+                await SupplierInvoiceTax("SupplierInvoiceTax"); //--Sukanya 031169
+                await SuplrInvcHeaderWhldgTax("SuplrInvcHeaderWhldgTax"); //--Sukanya 031169
 
-            //GR
-            await MaterialDocumentHeader("MaterialDocumentHeader"); //--Sukanya 031169
-            await MaterialDocumentItem("MaterialDocumentItem"); //--Sukanya 031169
+                //GR
+                await MaterialDocumentHeader("MaterialDocumentHeader"); //--Sukanya 031169
+                await MaterialDocumentItem("MaterialDocumentItem"); //--Sukanya 031169
 
-            //Reservation
-            await ReservationDocumentHeader("ReservationDocumentHeader"); //--Sukanya 041169
-            await ReservationDocumentItem("ReservationDocumentItem"); //--Sukanya 041169
+                //Reservation
+                await ReservationDocumentHeader("ReservationDocumentHeader"); //--Sukanya 041169
+                await ReservationDocumentItem("ReservationDocumentItem"); //--Sukanya 041169
+            }
 
 
             ServiceBase[] ServicesToRun;
@@ -124,6 +135,17 @@ namespace BIS_INTERFACE_BC
             }
 
         }
+        // จำนวนวันที่ดึงย้อนหลังของ Sales Order / Outbound Delivery / Billing (เดิม 3 วัน)
+        // ใช้ทั้งเงื่อนไข CreationDate (Add) และ LastChangeDateTime (Update)
+        private const int SyncLookbackDays = 11;
+
+        // TODO ชั่วคราว: backfill ข้อมูลที่เพี้ยนจากการรันวันที่ 20 พ.ย. 2026 -> ดึงตั้งแต่ 9 พ.ย. 2026 ไม่ว่าจะรันวันไหน //--Sukanya 231169
+        // รันเสร็จแล้วเปลี่ยนเป็น null เพื่อกลับไปใช้ SyncLookbackDays ตามปกติ
+        private static readonly DateTime? BackfillFromDate = new DateTime(2026, 11, 9);
+
+        // วันเริ่มต้นของช่วงที่ดึงข้อมูล (Sales Order / Outbound Delivery / Billing) //--Sukanya 231169
+        private static DateTime SyncStartDate => BackfillFromDate ?? DateTime.Today.AddDays(-SyncLookbackDays);
+
         private static string EscapeSql(object input)
         {
             if (input == null || input == DBNull.Value) return "";
@@ -151,24 +173,24 @@ namespace BIS_INTERFACE_BC
                     string formattedCreation;
                     string formattedLastChange;
 
-                    if (DateTime.TryParseExact(rawDate, "d/M/yyyy H:mm:ss", thaiCulture, DateTimeStyles.None, out DateTime tempDate))
+                    if (DateTime.TryParse(rawDate, CultureInfo.CurrentCulture, DateTimeStyles.None, out DateTime tempDate) /*--Sukanya 221169 parse ตาม culture ของเครื่องที่รัน (เดิม fix th-TH d/M -> เครื่องอื่นได้ปี 1483 หรือสลับวัน-เดือน)*/)
                     {
-                        formattedCreation = tempDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                        formattedCreation = tempDate.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
                     }
                     else
                     {
-                        formattedCreation = "1900-01-01";
+                        formattedCreation = "19000101";
                     }
 
                     string rawDateLastChange = row["LastChangeDate"].ToString();
 
-                    if (DateTime.TryParseExact(rawDateLastChange, "d/M/yyyy H:mm:ss", thaiCulture, DateTimeStyles.None, out DateTime tempLastDate))
+                    if (DateTime.TryParse(rawDateLastChange, CultureInfo.CurrentCulture, DateTimeStyles.None, out DateTime tempLastDate) /*--Sukanya 221169 parse ตาม culture ของเครื่องที่รัน (เดิม fix th-TH d/M -> เครื่องอื่นได้ปี 1483 หรือสลับวัน-เดือน)*/)
                     {
-                        formattedLastChange = tempLastDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                        formattedLastChange = tempLastDate.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
                     }
                     else
                     {
-                        formattedLastChange = "1900-01-01";
+                        formattedLastChange = "19000101";
                     }
 
                     batchSql.AppendLine($@"
@@ -764,15 +786,15 @@ namespace BIS_INTERFACE_BC
                     string formattedCreation;
                     string formattedLastChange;
                     // 3. ใช้ TryParseExact เพื่อป้องกัน Error หาก String มี Format แปลกๆ
-                    if (DateTime.TryParseExact(rawDate, "d/M/yyyy H:mm:ss", thaiCulture, DateTimeStyles.None, out DateTime tempDate))
+                    if (DateTime.TryParse(rawDate, CultureInfo.CurrentCulture, DateTimeStyles.None, out DateTime tempDate) /*--Sukanya 221169 parse ตาม culture ของเครื่องที่รัน (เดิม fix th-TH d/M -> เครื่องอื่นได้ปี 1483 หรือสลับวัน-เดือน)*/)
                     {
                         // แปลงเป็น ค.ศ. และ Format ที่ต้องการ
-                        formattedCreation = tempDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                        formattedCreation = tempDate.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
                     }
                     else
                     {
                         // กรณี Parse ไม่ผ่าน (เช่น ข้อมูลว่าง หรือ Format ไม่ตรงกับ d/M/yyyy H:mm:ss)
-                        formattedCreation = "1900-01-01"; // หรือค่า Default อื่นๆ
+                        formattedCreation = "19000101"; // หรือค่า Default อื่นๆ
                     }
 
 
@@ -780,15 +802,15 @@ namespace BIS_INTERFACE_BC
                     string rawDateLastChange = row["LastChangeDate"].ToString();
 
                     // 3. ใช้ TryParseExact เพื่อป้องกัน Error หาก String มี Format แปลกๆ
-                    if (DateTime.TryParseExact(rawDateLastChange, "d/M/yyyy H:mm:ss", thaiCulture, DateTimeStyles.None, out DateTime tempLastDate))
+                    if (DateTime.TryParse(rawDateLastChange, CultureInfo.CurrentCulture, DateTimeStyles.None, out DateTime tempLastDate) /*--Sukanya 221169 parse ตาม culture ของเครื่องที่รัน (เดิม fix th-TH d/M -> เครื่องอื่นได้ปี 1483 หรือสลับวัน-เดือน)*/)
                     {
                         // แปลงเป็น ค.ศ. และ Format ที่ต้องการ
-                        formattedLastChange = tempLastDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                        formattedLastChange = tempLastDate.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
                     }
                     else
                     {
                         // กรณี Parse ไม่ผ่าน (เช่น ข้อมูลว่าง หรือ Format ไม่ตรงกับ d/M/yyyy H:mm:ss)
-                        formattedLastChange = "1900-01-01"; // หรือค่า Default อื่นๆ
+                        formattedLastChange = "19000101"; // หรือค่า Default อื่นๆ
                     }
 
                     batchSql.AppendLine($@"
@@ -897,29 +919,29 @@ namespace BIS_INTERFACE_BC
                     string formattedValidityStartDate;
 
                     // 3. ใช้ TryParseExact เพื่อป้องกัน Error หาก String มี Format แปลกๆ
-                    if (DateTime.TryParseExact(rawDateStart, "d/M/yyyy H:mm:ss", thaiCulture, DateTimeStyles.None, out DateTime tempDate))
+                    if (DateTime.TryParse(rawDateStart, CultureInfo.CurrentCulture, DateTimeStyles.None, out DateTime tempDate) /*--Sukanya 221169 parse ตาม culture ของเครื่องที่รัน (เดิม fix th-TH d/M -> เครื่องอื่นได้ปี 1483 หรือสลับวัน-เดือน)*/)
                     {
                         // แปลงเป็น ค.ศ. และ Format ที่ต้องการ
-                        formattedValidityStartDate = tempDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                        formattedValidityStartDate = tempDate.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
                     }
                     else
                     {
                         // กรณี Parse ไม่ผ่าน (เช่น ข้อมูลว่าง หรือ Format ไม่ตรงกับ d/M/yyyy H:mm:ss)
-                        formattedValidityStartDate = "1900-01-01"; // หรือค่า Default อื่นๆ
+                        formattedValidityStartDate = "19000101"; // หรือค่า Default อื่นๆ
                     }
 
 
 
                     // 3. ใช้ TryParseExact เพื่อป้องกัน Error หาก String มี Format แปลกๆ
-                    if (DateTime.TryParseExact(rawDateEnd, "d/M/yyyy H:mm:ss", thaiCulture, DateTimeStyles.None, out DateTime tempDateEnd))
+                    if (DateTime.TryParse(rawDateEnd, CultureInfo.CurrentCulture, DateTimeStyles.None, out DateTime tempDateEnd) /*--Sukanya 221169 parse ตาม culture ของเครื่องที่รัน (เดิม fix th-TH d/M -> เครื่องอื่นได้ปี 1483 หรือสลับวัน-เดือน)*/)
                     {
                         // แปลงเป็น ค.ศ. และ Format ที่ต้องการ
-                        formattedValidityEndDate = tempDateEnd.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                        formattedValidityEndDate = tempDateEnd.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
                     }
                     else
                     {
                         // กรณี Parse ไม่ผ่าน (เช่น ข้อมูลว่าง หรือ Format ไม่ตรงกับ d/M/yyyy H:mm:ss)
-                        formattedValidityEndDate = "1900-01-01"; // หรือค่า Default อื่นๆ
+                        formattedValidityEndDate = "19000101"; // หรือค่า Default อื่นๆ
                     }
 
 
@@ -1446,9 +1468,8 @@ namespace BIS_INTERFACE_BC
         {
             var batchSql = new StringBuilder();
             string _url = "";
-            string _DocNo = "";
             DateTime Getdate = DateTime.Today;
-            DateTime LastDate = DateTime.Today.AddDays(-3);
+            DateTime LastDate = SyncStartDate;
 
             try
             {
@@ -1467,22 +1488,8 @@ namespace BIS_INTERFACE_BC
                 {
                     string soNumber = row["SalesOrder"].ToString().Replace("'", "''");
 
-                    // 1. ใช้ SQL Logic (IF NOT EXISTS) เพื่อลดการยิง GetDataTable เช็คทีละแถว
-                    batchSql.AppendLine($@"
-                IF NOT EXISTS (SELECT 1 FROM Op_SalesOrder WHERE SalesOrder = '{soNumber}')
-                BEGIN
-                    INSERT INTO Op_SalesOrder (
-                        [SalesOrder],[System_Name],[SalesOrderDate],[SalesOrderType],[SalesOrderTypeInternalCode],[SalesOrganization],
-                        [DistributionChannel],[SalesGroup],[SalesOffice],[SalesDistrict],[SoldToParty],[PurchaseOrderByCustomer],
-                        [TotolNetAmont],[OverallDeliveryStatus],[TrabsactionCurrency],[PricingDate],[PriceDetnExchangeRate],
-                        [RequestedDeliveryDate],[CustomerPaymentTerms],[OverallISDProcessStatus],[OverallTotalDeliveryStatus],[BillingDoucumentDate]
-                    ) VALUES (
-                        '{soNumber}', 'S4HC', '{row["SalesOrderDate"]}', '{row["SalesOrderType"]}', '{row["SalesOrderTypeInternalCode"]}', '{row["SalesOrganization"]}', 
-                        '{row["DistributionChannel"]}', '{row["SalesGroup"]}', '{row["SalesOffice"]}', '{row["SalesDistrict"]}', '{row["SoldToParty"]}', '{row["PurchaseOrderByCustomer"]}', 
-                        '{row["TotalNetAmount"]}', '{row["OverallDeliveryStatus"]}', '{row["TransactionCurrency"]}', '{row["PricingDate"]}', '{row["PriceDetnExchangeRate"]}', 
-                        '{row["RequestedDeliveryDate"]}', '{row["CustomerPaymentTerms"]}', '{row["OverallSDProcessStatus"]}', '{row["OverallTotalDeliveryStatus"]}', '{row["BillingDocumentDate"]}'
-                    );
-                END");
+                    // 1. Upsert header (แปลงวันที่/ตัวเลขให้ SQL อ่านได้ทุกเครื่อง) //--Sukanya 221169
+                    batchSql.AppendLine(SalesOrderHeaderUpsertSql(row));
 
                     // 2. เพิ่ม Task งานย่อยเข้าไปในคิวเพื่อรันพร้อมกัน
                     subTasks.Add(SalesOrderHeaderPartner(soNumber));
@@ -1519,7 +1526,7 @@ namespace BIS_INTERFACE_BC
             var batchSql = new StringBuilder();
             string _url = "";
             DateTime Getdate = DateTime.Today;
-            DateTime LastDate = DateTime.Today.AddDays(-3);
+            DateTime LastDate = SyncStartDate;
 
             try
             {
@@ -1538,24 +1545,8 @@ namespace BIS_INTERFACE_BC
                 {
                     string soNumber = row["SalesOrder"].ToString().Replace("'", "''");
 
-                    // 1. ใช้ StringBuilder ต่อ Query สำหรับ Batch Update
-                    // ใช้ IF EXISTS เพื่อให้ SQL Server ตรวจสอบเอง ลดการ Query จากฝั่ง C#
-                    batchSql.AppendLine($@"
-                IF EXISTS (SELECT 1 FROM Op_SalesOrder WHERE SalesOrder = '{soNumber}')
-                BEGIN
-                    UPDATE Op_SalesOrder SET 
-                        SalesOrderDate = '{row["SalesOrderDate"]}', SalesOrderType = '{row["SalesOrderType"]}',
-                        SalesOrderTypeInternalCode = '{row["SalesOrderTypeInternalCode"]}', SalesOrganization = '{row["SalesOrganization"]}',
-                        DistributionChannel = '{row["DistributionChannel"]}', SalesGroup = '{row["SalesGroup"]}',
-                        SalesOffice = '{row["SalesOffice"]}', SalesDistrict = '{row["SalesDistrict"]}',
-                        SoldToParty = '{row["SoldToParty"]}', PurchaseOrderByCustomer = '{row["PurchaseOrderByCustomer"].ToString().Replace("'", "''")}',
-                        TotolNetAmont = '{row["TotalNetAmount"]}', OverallDeliveryStatus = '{row["OverallDeliveryStatus"]}',
-                        TrabsactionCurrency = '{row["TransactionCurrency"]}', PricingDate = '{row["PricingDate"]}',
-                        PriceDetnExchangeRate = '{row["PriceDetnExchangeRate"]}', RequestedDeliveryDate = '{row["RequestedDeliveryDate"]}',
-                        CustomerPaymentTerms = '{row["CustomerPaymentTerms"]}', OverallISDProcessStatus = '{row["OverallSDProcessStatus"]}',
-                        OverallTotalDeliveryStatus = '{row["OverallTotalDeliveryStatus"]}', BillingDoucumentDate = '{row["BillingDocumentDate"]}'
-                    WHERE SalesOrder = '{soNumber}';
-                END");
+                    // 1. Upsert header: ถ้ายังไม่มี (เช่นรอบ Add เคย error) ให้ insert ด้วย //--Sukanya 221169
+                    batchSql.AppendLine(SalesOrderHeaderUpsertSql(row));
 
                     // 2. เตรียม Task สำหรับอัปเดตข้อมูลประกอบ (Items / Partners)
                     subTasks.Add(SalesOrderHeaderPartner(soNumber));
@@ -1868,7 +1859,7 @@ namespace BIS_INTERFACE_BC
             var batchSql = new StringBuilder();
             string _url = "";
             DateTime Getdate = DateTime.Today;
-            DateTime LastDate = DateTime.Today.AddDays(-3);
+            DateTime LastDate = SyncStartDate;
 
             try
             {
@@ -1892,24 +1883,8 @@ namespace BIS_INTERFACE_BC
                 {
                     string billingDoc = row["BillingDocument"].ToString().Replace("'", "''");
 
-                    // 3. ใช้ SQL Logic (IF NOT EXISTS) เพื่อลดการยิง GetDataTable เช็คทีละแถว
-                    batchSql.AppendLine($@"
-                IF NOT EXISTS (SELECT 1 FROM Op_Billing WHERE BillingDocument = '{billingDoc}')
-                BEGIN
-                    INSERT INTO Op_Billing (
-                        [BillingDocument],[BillingDocumentType],[BillingDocumentDate],[SoldToParty],[PayerParty],
-                        [CompanyCode],[SalesOrganization],[DistributionChannel],[Division],[TransactionCurrency],
-                        AbsltAccountingExchangeRate,[TotalNetAmount],[TaxAmount],[TotalGrossAmount],
-                        [CustomerPaymentTerms],[OverallBillingStatus],[BillingDocumentIsCancelled],
-                        [CancelledBillingDocument],[AccountingDocument],[CreationDate]
-                    ) VALUES (
-                        '{billingDoc}', '{row["BillingDocumentType"]}', '{row["BillingDocumentDate"]}', '{row["SoldToParty"]}', '{row["PayerParty"]}', 
-                        '{row["CompanyCode"]}', '{row["SalesOrganization"]}', '{row["DistributionChannel"]}', '{row["Division"]}', '{row["TransactionCurrency"]}', 
-                        '{row["AbsltAccountingExchangeRate"]}', '{row["TotalNetAmount"]}', '{row["TaxAmount"]}', '{row["TotalGrossAmount"]}', 
-                        '{row["CustomerPaymentTerms"]}', '{row["OverallBillingStatus"]}', '{row["BillingDocumentIsCancelled"]}', 
-                        '{row["CancelledBillingDocument"]}', '{row["AccountingDocument"]}', '{row["CreationDate"]}'
-                    );
-                END");
+                    // 3. Upsert header (แปลงวันที่/ตัวเลขให้ SQL อ่านได้ทุกเครื่อง) //--Sukanya 221169
+                    batchSql.AppendLine(BillingHeaderUpsertSql(row));
 
                     // 4. เตรียม Task สำหรับดึง Item ของ Billing นี้แบบขนาน
                     subTasks.Add(BillingDocumentItem(billingDoc, "Add"));
@@ -1945,7 +1920,7 @@ namespace BIS_INTERFACE_BC
             var batchSql = new StringBuilder();
             string _url = "";
             DateTime Getdate = DateTime.Today;
-            DateTime LastDate = DateTime.Today.AddDays(-3);
+            DateTime LastDate = SyncStartDate;
 
             try
             {
@@ -1967,22 +1942,8 @@ namespace BIS_INTERFACE_BC
                 {
                     string billingDoc = row["BillingDocument"].ToString().Replace("'", "''");
 
-                    // 1. ใช้ SQL Logic (IF EXISTS) เพื่อรวมคำสั่งเช็คและอัปเดตใน Script เดียว
-                    batchSql.AppendLine($@"
-                IF EXISTS (SELECT 1 FROM Op_Billing WHERE BillingDocument = '{billingDoc}')
-                BEGIN
-                    UPDATE Op_Billing SET 
-                        BillingDocumentType = '{row["BillingDocumentType"]}', SoldToParty = '{row["SoldToParty"]}',
-                        PayerParty = '{row["PayerParty"]}', CompanyCode = '{row["CompanyCode"]}',
-                        BillingDocumentDate = '{row["BillingDocumentDate"]}', SalesOrganization = '{row["SalesOrganization"]}',
-                        DistributionChannel = '{row["DistributionChannel"]}', Division = '{row["Division"]}',
-                        TransactionCurrency = '{row["TransactionCurrency"]}', AbsltAccountingExchangeRate = '{row["AbsltAccountingExchangeRate"]}',
-                        TotalNetAmount = '{row["TotalNetAmount"]}', TaxAmount = '{row["TaxAmount"]}',
-                        CustomerPaymentTerms = '{row["CustomerPaymentTerms"]}', OverallBillingStatus = '{row["OverallBillingStatus"]}',
-                        BillingDocumentIsCancelled = '{row["BillingDocumentIsCancelled"]}', CancelledBillingDocument = '{row["CancelledBillingDocument"]}',
-                        AccountingDocument = '{row["AccountingDocument"]}', CreationDate = '{row["CreationDate"]}'
-                    WHERE BillingDocument = '{billingDoc}';
-                END");
+                    // 1. Upsert header: ถ้ายังไม่มี (เช่นรอบ Add เคย error) ให้ insert ด้วย ไม่ใช่ update อย่างเดียว //--Sukanya 221169
+                    batchSql.AppendLine(BillingHeaderUpsertSql(row));
 
                     // 2. เตรียม Task สำหรับอัปเดต Item ของ Billing แบบ Parallel
                     subTasks.Add(BillingDocumentItem(billingDoc, "Update"));
@@ -2010,6 +1971,111 @@ namespace BIS_INTERFACE_BC
                 SQLConnect.Updatedata($"INSERT INTO Log_Status(Process,Status,LogDate,LogDescription) VALUES ('Update BillingHeader','Fail',GETDATE(),'{errMsg}');", "dbDW");
                 Console.WriteLine(e.Message);
             }
+        }
+
+        // SQL upsert ของ Op_SalesOrder 1 ใบ ใช้ร่วมกันทั้ง AddSalesOrder / UpdateSalesOrder //--Sukanya 221169
+        // เหตุผลเดียวกับ BillingHeaderUpsertSql (วันที่ตาม Region ของเครื่อง dd/MM -> สลับวัน-เดือน หรือ error ทั้ง batch)
+        private static string SalesOrderHeaderUpsertSql(DataRow row)
+        {
+            string so = ToSqlValue(row, "SalesOrder", S);
+            string soDate = ToSqlValue(row, "SalesOrderDate", D);
+            string soType = ToSqlValue(row, "SalesOrderType", S);
+            string soTypeInt = ToSqlValue(row, "SalesOrderTypeInternalCode", S);
+            string salesOrg = ToSqlValue(row, "SalesOrganization", S);
+            string distCh = ToSqlValue(row, "DistributionChannel", S);
+            string salesGroup = ToSqlValue(row, "SalesGroup", S);
+            string salesOffice = ToSqlValue(row, "SalesOffice", S);
+            string district = ToSqlValue(row, "SalesDistrict", S);
+            string soldTo = ToSqlValue(row, "SoldToParty", S);
+            string custPo = ToSqlValue(row, "PurchaseOrderByCustomer", S);
+            string netAmt = ToSqlValue(row, "TotalNetAmount", N);
+            string delivStatus = ToSqlValue(row, "OverallDeliveryStatus", S);
+            string currency = ToSqlValue(row, "TransactionCurrency", S);
+            string pricingDate = ToSqlValue(row, "PricingDate", D);
+            string exRate = ToSqlValue(row, "PriceDetnExchangeRate", N);
+            string reqDelivDate = ToSqlValue(row, "RequestedDeliveryDate", D);
+            string payTerms = ToSqlValue(row, "CustomerPaymentTerms", S);
+            string sdStatus = ToSqlValue(row, "OverallSDProcessStatus", S);
+            string totalDelivStatus = ToSqlValue(row, "OverallTotalDeliveryStatus", S);
+            string billDate = ToSqlValue(row, "BillingDocumentDate", D);
+
+            return $@"
+                IF EXISTS (SELECT 1 FROM Op_SalesOrder WHERE SalesOrder = {so})
+                    UPDATE Op_SalesOrder SET
+                        SalesOrderDate = {soDate}, SalesOrderType = {soType}, SalesOrderTypeInternalCode = {soTypeInt},
+                        SalesOrganization = {salesOrg}, DistributionChannel = {distCh}, SalesGroup = {salesGroup},
+                        SalesOffice = {salesOffice}, SalesDistrict = {district}, SoldToParty = {soldTo},
+                        PurchaseOrderByCustomer = {custPo}, TotolNetAmont = {netAmt}, OverallDeliveryStatus = {delivStatus},
+                        TrabsactionCurrency = {currency}, PricingDate = {pricingDate}, PriceDetnExchangeRate = {exRate},
+                        RequestedDeliveryDate = {reqDelivDate}, CustomerPaymentTerms = {payTerms},
+                        OverallISDProcessStatus = {sdStatus}, OverallTotalDeliveryStatus = {totalDelivStatus},
+                        BillingDoucumentDate = {billDate}
+                    WHERE SalesOrder = {so};
+                ELSE
+                    INSERT INTO Op_SalesOrder (
+                        [SalesOrder],[System_Name],[SalesOrderDate],[SalesOrderType],[SalesOrderTypeInternalCode],[SalesOrganization],
+                        [DistributionChannel],[SalesGroup],[SalesOffice],[SalesDistrict],[SoldToParty],[PurchaseOrderByCustomer],
+                        [TotolNetAmont],[OverallDeliveryStatus],[TrabsactionCurrency],[PricingDate],[PriceDetnExchangeRate],
+                        [RequestedDeliveryDate],[CustomerPaymentTerms],[OverallISDProcessStatus],[OverallTotalDeliveryStatus],[BillingDoucumentDate]
+                    ) VALUES (
+                        {so}, 'S4HC', {soDate}, {soType}, {soTypeInt}, {salesOrg},
+                        {distCh}, {salesGroup}, {salesOffice}, {district}, {soldTo}, {custPo},
+                        {netAmt}, {delivStatus}, {currency}, {pricingDate}, {exRate},
+                        {reqDelivDate}, {payTerms}, {sdStatus}, {totalDelivStatus}, {billDate}
+                    );";
+        }
+
+        // SQL upsert ของ Op_Billing 1 ใบ ใช้ร่วมกันทั้ง AddBilling / UpdateBilling //--Sukanya 221169
+        // เดิมส่ง row[...] ตรง ๆ: วันที่ได้รูปแบบตาม Region ของเครื่อง (dd/MM, พ.ศ.) -> SQL แปลงไม่ได้ -> ทั้ง batch 50 ใบ error
+        //   แต่ item insert แยก Task จึงสำเร็จ => มี Op_BillingDocumentItem แต่ไม่มี Op_Billing
+        //   และ UpdateBilling เดิม update เฉพาะใบที่มีอยู่แล้ว จึงไม่เคยเติม header ที่หายกลับมา
+        private static string BillingHeaderUpsertSql(DataRow row)
+        {
+            string doc = ToSqlValue(row, "BillingDocument", S);
+            string type = ToSqlValue(row, "BillingDocumentType", S);
+            string billDate = ToSqlValue(row, "BillingDocumentDate", D);
+            string soldTo = ToSqlValue(row, "SoldToParty", S);
+            string payer = ToSqlValue(row, "PayerParty", S);
+            string company = ToSqlValue(row, "CompanyCode", S);
+            string salesOrg = ToSqlValue(row, "SalesOrganization", S);
+            string distCh = ToSqlValue(row, "DistributionChannel", S);
+            string division = ToSqlValue(row, "Division", S);
+            string currency = ToSqlValue(row, "TransactionCurrency", S);
+            string exRate = ToSqlValue(row, "AbsltAccountingExchangeRate", N);
+            string netAmt = ToSqlValue(row, "TotalNetAmount", N);
+            string taxAmt = ToSqlValue(row, "TaxAmount", N);
+            string grossAmt = ToSqlValue(row, "TotalGrossAmount", N);
+            string payTerms = ToSqlValue(row, "CustomerPaymentTerms", S);
+            string status = ToSqlValue(row, "OverallBillingStatus", S);
+            string cancelled = ToSqlValue(row, "BillingDocumentIsCancelled", S);
+            string cancelDoc = ToSqlValue(row, "CancelledBillingDocument", S);
+            string accDoc = ToSqlValue(row, "AccountingDocument", S);
+            string createDate = ToSqlValue(row, "CreationDate", D);
+
+            return $@"
+                IF EXISTS (SELECT 1 FROM Op_Billing WHERE BillingDocument = {doc})
+                    UPDATE Op_Billing SET
+                        BillingDocumentType = {type}, BillingDocumentDate = {billDate}, SoldToParty = {soldTo}, PayerParty = {payer},
+                        CompanyCode = {company}, SalesOrganization = {salesOrg}, DistributionChannel = {distCh}, Division = {division},
+                        TransactionCurrency = {currency}, AbsltAccountingExchangeRate = {exRate}, TotalNetAmount = {netAmt},
+                        TaxAmount = {taxAmt}, TotalGrossAmount = {grossAmt}, CustomerPaymentTerms = {payTerms},
+                        OverallBillingStatus = {status}, BillingDocumentIsCancelled = {cancelled},
+                        CancelledBillingDocument = {cancelDoc}, AccountingDocument = {accDoc}, CreationDate = {createDate}
+                    WHERE BillingDocument = {doc};
+                ELSE
+                    INSERT INTO Op_Billing (
+                        [BillingDocument],[BillingDocumentType],[BillingDocumentDate],[SoldToParty],[PayerParty],
+                        [CompanyCode],[SalesOrganization],[DistributionChannel],[Division],[TransactionCurrency],
+                        AbsltAccountingExchangeRate,[TotalNetAmount],[TaxAmount],[TotalGrossAmount],
+                        [CustomerPaymentTerms],[OverallBillingStatus],[BillingDocumentIsCancelled],
+                        [CancelledBillingDocument],[AccountingDocument],[CreationDate]
+                    ) VALUES (
+                        {doc}, {type}, {billDate}, {soldTo}, {payer},
+                        {company}, {salesOrg}, {distCh}, {division}, {currency},
+                        {exRate}, {netAmt}, {taxAmt}, {grossAmt},
+                        {payTerms}, {status}, {cancelled},
+                        {cancelDoc}, {accDoc}, {createDate}
+                    );";
         }
 
         private static async Task BillingDocumentItem(string BillingDoc, string BillinngType)
@@ -2096,7 +2162,7 @@ namespace BIS_INTERFACE_BC
             string _url = "";
             int rowCount = 0;
             DateTime Getdate = DateTime.Today;
-            DateTime LastDate = DateTime.Today.AddDays(-3);
+            DateTime LastDate = SyncStartDate;
 
             try
             {
@@ -2116,19 +2182,27 @@ namespace BIS_INTERFACE_BC
 
                 foreach (DataRow row in dt.Rows)
                 {
-                    string deliveryDoc = row["DeliveryDocument"].ToString().Replace("'", "''");
+                    // แปลงวันที่/ตัวเลขให้ SQL อ่านได้ทุกเครื่อง (เดิมส่งตาม Region ของเครื่อง dd/MM -> สลับวัน-เดือน/error) //--Sukanya 221169
+                    string deliveryDoc = ToSqlValue(row, "DeliveryDocument", S);
+                    string docDate = ToSqlValue(row, "DocumentDate", D);
+                    string delivDate = ToSqlValue(row, "DeliveryDate", D);
+                    string pickDate = ToSqlValue(row, "PickingDate", D);
+                    string giDate = ToSqlValue(row, "PlannedGoodsIssueDate", D);
+                    string grossWt = ToSqlValue(row, "HeaderGrossWeight", N);
+                    string netWt = ToSqlValue(row, "HeaderNetWeight", N);
+                    string pickSts = ToSqlValue(row, "OvrlItmPickingIncompletionSts", S);
 
                     // 3. ใช้ SQL Logic (UPSERT) เพื่อลดการยิง Query เช็คทีละแถวจากฝั่ง C#
                     batchSql.AppendLine($@"
-                IF EXISTS (SELECT 1 FROM Op_OutbDelivery WHERE DeliveryDocument = '{deliveryDoc}')
+                IF EXISTS (SELECT 1 FROM Op_OutbDelivery WHERE DeliveryDocument = {deliveryDoc})
                 BEGIN
-                    UPDATE Op_OutbDelivery SET 
-                        DocumentDate = '{row["DocumentDate"]}', DeliveryDate = '{row["DeliveryDate"]}',
-                        PickingDate = '{row["PickingDate"]}', PlannedGoodsIssueDate = '{row["PlannedGoodsIssueDate"]}',
-                        HeaderGrossWeight = '{row["HeaderGrossWeight"]}', HeaderNetWeight = '{row["HeaderNetWeight"]}',
-                        OvrlItmPickingIncompletionSts = '{row["OvrlItmPickingIncompletionSts"]}', 
+                    UPDATE Op_OutbDelivery SET
+                        DocumentDate = {docDate}, DeliveryDate = {delivDate},
+                        PickingDate = {pickDate}, PlannedGoodsIssueDate = {giDate},
+                        HeaderGrossWeight = {grossWt}, HeaderNetWeight = {netWt},
+                        OvrlItmPickingIncompletionSts = {pickSts},
                         UpdateDate = GETDATE()
-                    WHERE DeliveryDocument = '{deliveryDoc}';
+                    WHERE DeliveryDocument = {deliveryDoc};
                 END
                 ELSE
                 BEGIN
@@ -2137,9 +2211,9 @@ namespace BIS_INTERFACE_BC
                         [PlannedGoodsIssueDate],[HeaderGrossWeight],[HeaderNetWeight],
                         [OvrlItmPickingIncompletionSts],[UpdateDate]
                     ) VALUES (
-                        '{deliveryDoc}', '{row["DocumentDate"]}', '{row["DeliveryDate"]}', '{row["PickingDate"]}', 
-                        '{row["PlannedGoodsIssueDate"]}', '{row["HeaderGrossWeight"]}', '{row["HeaderNetWeight"]}', 
-                        '{row["OvrlItmPickingIncompletionSts"]}', GETDATE()
+                        {deliveryDoc}, {docDate}, {delivDate}, {pickDate},
+                        {giDate}, {grossWt}, {netWt},
+                        {pickSts}, GETDATE()
                     );
                 END");
 
@@ -2193,7 +2267,7 @@ namespace BIS_INTERFACE_BC
                     string supplierFullName = row["SupplierFullName"].ToString().Replace("'", "''");
                     string accountGroup = row["SupplierAccountGroup"].ToString();
                     string createdBy = row["CreatedByUser"].ToString();
-                    string creationDate = row["CreationDate"].ToString();
+                    string creationDate = SqlDateOrNull(row["CreationDate"]); //--Sukanya 221169 แปลงเป็น ISO ไม่ขึ้นกับ Region ของเครื่อง
                     string paymentBlocked = row["PaymentIsBlockedForSupplier"].ToString();
 
                     batchSql.AppendLine($@"
@@ -2225,7 +2299,7 @@ namespace BIS_INTERFACE_BC
                             '{accountGroup}',
                             '{paymentBlocked}',
                             '{createdBy}',
-                            '{creationDate}',
+                            {creationDate},
                             GETDATE()
                         );
                     END
@@ -2320,16 +2394,9 @@ namespace BIS_INTERFACE_BC
                     string interestCode = row["InterestCalculationCode"].ToString();
                     string interestFreq = row["IntrstCalcFrequencyInMonths"].ToString();
 
-                    // ===== Date (NULL-safe) =====
-                    string interestCalcDate =
-                        string.IsNullOrEmpty(row["InterestCalculationDate"].ToString())
-                        ? "NULL"
-                        : $"'{row["InterestCalculationDate"]}'";
-
-                    string supplierCertDate =
-                        string.IsNullOrEmpty(row["SupplierCertificationDate"].ToString())
-                        ? "NULL"
-                        : $"'{row["SupplierCertificationDate"]}'";
+                    // ===== Date (NULL-safe, ISO ไม่ขึ้นกับ Region ของเครื่อง) ===== //--Sukanya 221169
+                    string interestCalcDate = SqlDateOrNull(row["InterestCalculationDate"]);
+                    string supplierCertDate = SqlDateOrNull(row["SupplierCertificationDate"]);
 
                     string headOffice = row["SupplierHeadOffice"].ToString();
                     string altPayee = row["AlternativePayee"].ToString();
@@ -3993,9 +4060,9 @@ namespace BIS_INTERFACE_BC
                     string netAmt = string.IsNullOrWhiteSpace(row["PurReqnNetAmount"]?.ToString()) ? "0" : row["PurReqnNetAmount"].ToString();
                     string percent = string.IsNullOrWhiteSpace(row["MultipleAcctAssgmtDistrPercent"]?.ToString()) ? "0" : row["MultipleAcctAssgmtDistrPercent"].ToString();
 
-                    string createDate = row["CreationDate"]?.ToString();
-                    string settleDate = row["SettlementReferenceDate"]?.ToString();
-                    string validDate = row["ValidityDate"]?.ToString();
+                    string createDate = SqlDate(row["CreationDate"]);            //--Sukanya 221169 ISO ไม่ขึ้นกับ Region ของเครื่อง
+                    string settleDate = SqlDate(row["SettlementReferenceDate"]); //--Sukanya 221169
+                    string validDate = SqlDate(row["ValidityDate"]);             //--Sukanya 221169
 
                     batchSql.AppendLine($@"
             IF EXISTS (
@@ -4126,9 +4193,9 @@ namespace BIS_INTERFACE_BC
                     string netW = string.IsNullOrWhiteSpace(row["HeaderNetWeight"]?.ToString()) ? "0" : row["HeaderNetWeight"].ToString();
                     string volume = string.IsNullOrWhiteSpace(row["HeaderVolume"]?.ToString()) ? "0" : row["HeaderVolume"].ToString();
 
-                    string deliveryDate = row["DeliveryDate"]?.ToString();
-                    string docDate = row["DocumentDate"]?.ToString();
-                    string createDate = row["CreationDate"]?.ToString();
+                    string deliveryDate = SqlDate(row["DeliveryDate"]); //--Sukanya 221169 ISO ไม่ขึ้นกับ Region ของเครื่อง
+                    string docDate = SqlDate(row["DocumentDate"]);      //--Sukanya 221169
+                    string createDate = SqlDate(row["CreationDate"]);   //--Sukanya 221169
 
                     batchSql.AppendLine($@"
                     IF EXISTS (
@@ -4282,7 +4349,7 @@ namespace BIS_INTERFACE_BC
                     string compDeliv = row["IsCompletelyDelivered"]?.ToString() == "true" ? "1" : "0";
                     string batchMng = row["MaterialIsBatchManaged"]?.ToString() == "true" ? "1" : "0";
 
-                    string createDate = row["CreationDate"]?.ToString();
+                    string createDate = SqlDate(row["CreationDate"]); //--Sukanya 221169 ISO ไม่ขึ้นกับ Region ของเครื่อง
 
                     batchSql.AppendLine($@"
                     IF EXISTS (
@@ -4691,7 +4758,9 @@ namespace BIS_INTERFACE_BC
                 case ColType.Date:
                     // ODataHelper แปลง /Date(...)/ เป็น DateTime แล้ว ToString ตาม culture ของเครื่อง (เช่น th-TH ปี พ.ศ.)
                     return DateTime.TryParse(value, CultureInfo.CurrentCulture, DateTimeStyles.None, out DateTime date)
-                        ? $"'{date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}'" : "NULL";
+                        // yyyyMMdd (ไม่มีขีด) SQL Server อ่านแบบเดียวเสมอ ทั้ง date/datetime/datetime2 ไม่ขึ้นกับภาษา/DATEFORMAT ของ login //--Sukanya 231169
+                        // (yyyy-MM-dd กับคอลัมน์ datetime จะถูกอ่านเป็น yyyy-dd-MM ถ้า login ใช้ภาษาแบบ dmy)
+                        ? $"'{date.ToString("yyyyMMdd", CultureInfo.InvariantCulture)}'" : "NULL";
                 default:
                     // ข้อความเก็บตาม SAP ทุกตัวอักษร ไม่ตัดช่องว่างหน้า-หลัง (EscapeSql จะ Trim จึงไม่ใช้) //--Sukanya 051169
                     return $"N'{raw.Replace("'", "''")}'";
