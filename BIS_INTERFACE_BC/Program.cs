@@ -22,37 +22,30 @@ namespace BIS_INTERFACE_BC
         static async Task Main()
         { // รันงาน sync แบบ block ให้จบก่อน
 
-            // TODO ชั่วคราว: BackfillOnly = true -> รันเฉพาะ Sales Order / OutbDelivery / Billing เพื่อ backfill ข้อมูลที่เพี้ยนจากการรันวันที่ 20 พ.ย. 2026
-            // รันเสร็จแล้วเปลี่ยนเป็น false (และ BackfillFromDate เป็น null) //--Sukanya 231169
-            bool BackfillOnly = false; // ไม่ใช้ const เพื่อไม่ให้ขึ้น warning "Unreachable code detected"
-
-            if (!BackfillOnly)
-            {
-                //Product
-                await Product("Product");
-                await ProductDescription("ProductDescription");
-                await ProductPlant("ProductPlant");
-                await ProductPlantProcurement("ProductPlantProcurement"); //ปรับถึงนี้
-                await ProductSalesDelivery("ProductPlantProcurement");
-                await ProductSalesTax("ProductSalesTax");
-                await ProductStorage("ProductStorage");
-                await ProductUnitsOfMeasure("ProductUnitsOfMeasure");
+            //Product
+            await Product("Product");
+            await ProductDescription("ProductDescription");
+            await ProductPlant("ProductPlant");
+            await ProductPlantProcurement("ProductPlantProcurement"); //ปรับถึงนี้
+            await ProductSalesDelivery("ProductPlantProcurement");
+            await ProductSalesTax("ProductSalesTax");
+            await ProductStorage("ProductStorage");
+            await ProductUnitsOfMeasure("ProductUnitsOfMeasure");
 
 
-                //Business Partner
-                await BusinessPartner("BusinessPartner");
-                await BusinessPartnerAddress("BusinessPartnerAddress");
-                await BusinessPartnerEmail("BusinessPartnerEmail");
-                await BusinessPartnerPhone("BusinessPartnerPhone");
-                await BusinnessPartnerCustomer("BusinnessPartnerCustomer");
-                await BusinnessPartnerCustomerCompany("BusinnessPartnerCustomerCompany");
-                await BusinnessPartnerCustomerSalesaArea("BusinnessPartnerCustomerSalesaArea");
-                await BusinessPartnerCustSalesPartnerFunc("BusinessPartnerCustSalesPartnerFunc");
-                await BusinessPartnerCustSalesSupplier("BusinessPartnerCustSalesSupplier"); //--Kamonwan 050269
-                await BusinessPartnerCustSalesSupplierCompany("BusinessPartnerCustSalesSupplierCompany"); //--Kamonwan 060269
+            //Business Partner
+            await BusinessPartner("BusinessPartner");
+            await BusinessPartnerAddress("BusinessPartnerAddress");
+            await BusinessPartnerEmail("BusinessPartnerEmail");
+            await BusinessPartnerPhone("BusinessPartnerPhone");
+            await BusinnessPartnerCustomer("BusinnessPartnerCustomer");
+            await BusinnessPartnerCustomerCompany("BusinnessPartnerCustomerCompany");
+            await BusinnessPartnerCustomerSalesaArea("BusinnessPartnerCustomerSalesaArea");
+            await BusinessPartnerCustSalesPartnerFunc("BusinessPartnerCustSalesPartnerFunc");
+            await BusinessPartnerCustSalesSupplier("BusinessPartnerCustSalesSupplier"); //--Kamonwan 050269
+            await BusinessPartnerCustSalesSupplierCompany("BusinessPartnerCustSalesSupplierCompany"); //--Kamonwan 060269
 
 
-            }
 
             //Sales Order
             await AddSalesOrder("SalesOrder");
@@ -66,41 +59,38 @@ namespace BIS_INTERFACE_BC
             await AddBilling("Billing");
             await UpdateBilling("Billing");
 
-            if (!BackfillOnly)
-            {
-                //MaterialStock
-                await MaterialStockInAcctMod("MaterialStockInAcctMod"); //--Kamonwan 060269
+            //MaterialStock
+            await MaterialStockInAcctMod("MaterialStockInAcctMod"); //--Kamonwan 060269
 
-                //Purchase 
-                await PurchaseOrder("PurchaseOrder"); //--Kamonwan 060269
-                await PurchaseOrderItem("PurchaseOrderItem"); //--Kamonwan 060269
-                await PurchaseOrderItemNote("PurchaseOrderItemNote"); //--Kamonwan 060269
-                await PurchaseOrderNote("PurchaseOrderNote"); //--Kamonwan 060269
-                await PurchaseOrderScheduleLine("PurchaseOrderScheduleLine"); //--Kamonwan 060269
-                await PurOrdAccountAssignment("PurOrdAccountAssignment"); //--Kamonwan 060269
-                await PurOrdPricingElement("PurOrdPricingElement"); //--Kamonwan 060269
-                await PurchaseRequisitionHeader("PurchaseRequisitionHeader"); //--Kamonwan 060269
-                await PurchaseRequisitionItem("PurchaseRequisitionItem"); //--Kamonwan 060269
-                await PurReqAddDelivery("PurReqAddDelivery"); //--Kamonwan 060269
-                await PurReqnAcctAssgmt("PurReqnAcctAssgmt"); //--Kamonwan 060269
-                await InboundDeliveryHeader("InboundDeliveryHeader"); //--Kamonwan 060269
-                await InboundDeliveryItem("InboundDeliveryItem"); //--Kamonwan 060269
+            //Purchase 
+            await PurchaseOrder("PurchaseOrder"); //--Kamonwan 060269
+            await PurchaseOrderItem("PurchaseOrderItem"); //--Kamonwan 060269
+            await PurchaseOrderItemNote("PurchaseOrderItemNote"); //--Kamonwan 060269
+            await PurchaseOrderNote("PurchaseOrderNote"); //--Kamonwan 060269
+            await PurchaseOrderScheduleLine("PurchaseOrderScheduleLine"); //--Kamonwan 060269
+            await PurOrdAccountAssignment("PurOrdAccountAssignment"); //--Kamonwan 060269
+            await PurOrdPricingElement("PurOrdPricingElement"); //--Kamonwan 060269
+            await PurchaseRequisitionHeader("PurchaseRequisitionHeader"); //--Kamonwan 060269
+            await PurchaseRequisitionItem("PurchaseRequisitionItem"); //--Kamonwan 060269
+            await PurReqAddDelivery("PurReqAddDelivery"); //--Kamonwan 060269
+            await PurReqnAcctAssgmt("PurReqnAcctAssgmt"); //--Kamonwan 060269
+            await InboundDeliveryHeader("InboundDeliveryHeader"); //--Kamonwan 060269
+            await InboundDeliveryItem("InboundDeliveryItem"); //--Kamonwan 060269
 
-                //Supplier Invoice
-                await SupplierInvoice("SupplierInvoice"); //--Sukanya 031169
-                await SuplrInvcItemPurOrdRef("SuplrInvcItemPurOrdRef"); //--Sukanya 031169
-                await SupplierInvoiceItemGLAcct("SupplierInvoiceItemGLAcct"); //--Sukanya 031169
-                await SupplierInvoiceTax("SupplierInvoiceTax"); //--Sukanya 031169
-                await SuplrInvcHeaderWhldgTax("SuplrInvcHeaderWhldgTax"); //--Sukanya 031169
+            //Supplier Invoice
+            await SupplierInvoice("SupplierInvoice"); //--Sukanya 031169
+            await SuplrInvcItemPurOrdRef("SuplrInvcItemPurOrdRef"); //--Sukanya 031169
+            await SupplierInvoiceItemGLAcct("SupplierInvoiceItemGLAcct"); //--Sukanya 031169
+            await SupplierInvoiceTax("SupplierInvoiceTax"); //--Sukanya 031169
+            await SuplrInvcHeaderWhldgTax("SuplrInvcHeaderWhldgTax"); //--Sukanya 031169
 
-                //GR
-                await MaterialDocumentHeader("MaterialDocumentHeader"); //--Sukanya 031169
-                await MaterialDocumentItem("MaterialDocumentItem"); //--Sukanya 031169
+            //GR
+            await MaterialDocumentHeader("MaterialDocumentHeader"); //--Sukanya 031169
+            await MaterialDocumentItem("MaterialDocumentItem"); //--Sukanya 031169
 
-                //Reservation
-                await ReservationDocumentHeader("ReservationDocumentHeader"); //--Sukanya 041169
-                await ReservationDocumentItem("ReservationDocumentItem"); //--Sukanya 041169
-            }
+            //Reservation
+            await ReservationDocumentHeader("ReservationDocumentHeader"); //--Sukanya 041169
+            await ReservationDocumentItem("ReservationDocumentItem"); //--Sukanya 041169
 
 
             ServiceBase[] ServicesToRun;
@@ -135,16 +125,12 @@ namespace BIS_INTERFACE_BC
             }
 
         }
-        // จำนวนวันที่ดึงย้อนหลังของ Sales Order / Outbound Delivery / Billing (เดิม 3 วัน)
+        // จำนวนวันที่ดึงย้อนหลังของ Sales Order / Outbound Delivery / Billing
         // ใช้ทั้งเงื่อนไข CreationDate (Add) และ LastChangeDateTime (Update)
-        private const int SyncLookbackDays = 11;
-
-        // TODO ชั่วคราว: backfill ข้อมูลที่เพี้ยนจากการรันวันที่ 20 พ.ย. 2026 -> ดึงตั้งแต่ 9 พ.ย. 2026 ไม่ว่าจะรันวันไหน //--Sukanya 231169
-        // รันเสร็จแล้วเปลี่ยนเป็น null เพื่อกลับไปใช้ SyncLookbackDays ตามปกติ
-        private static readonly DateTime? BackfillFromDate = new DateTime(2026, 11, 9);
+        private const int SyncLookbackDays = 3;
 
         // วันเริ่มต้นของช่วงที่ดึงข้อมูล (Sales Order / Outbound Delivery / Billing) //--Sukanya 231169
-        private static DateTime SyncStartDate => BackfillFromDate ?? DateTime.Today.AddDays(-SyncLookbackDays);
+        private static DateTime SyncStartDate => DateTime.Today.AddDays(-SyncLookbackDays);
 
         private static string EscapeSql(object input)
         {
