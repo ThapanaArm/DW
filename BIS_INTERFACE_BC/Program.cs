@@ -22,6 +22,16 @@ namespace BIS_INTERFACE_BC
         static async Task Main()
         { // รันงาน sync แบบ block ให้จบก่อน
 
+            // ตรวจ connection string ก่อนเริ่ม sync //--Claude 251169
+            // .NET อ่าน config จากไฟล์ <ชื่อ exe>.config ถ้า rename exe (เช่น "MGT_INTERFACE_SAP 24112026.exe") แต่ไม่ rename .config ตาม
+            // จะหา dbDW ไม่เจอ -> ทุกขั้นตอน NullReferenceException และไม่มี Log_Status สักแถว (เคสวันที่ 241169)
+            if (System.Configuration.ConfigurationManager.ConnectionStrings["dbDW"] == null)
+            {
+                Console.Error.WriteLine("ไม่พบ connection string 'dbDW' ในไฟล์ " + AppDomain.CurrentDomain.SetupInformation.ConfigurationFile);
+                Environment.Exit(2); // Task Scheduler จะแสดง Last Run Result = 0x2
+            }
+
+
             //Product
             await Product("Product");
             await ProductDescription("ProductDescription");
@@ -3085,13 +3095,18 @@ namespace BIS_INTERFACE_BC
                 if (batchSql.Length > 0)
                     SQLConnect.Updatedata(batchSql.ToString(), "dbDW");
 
+                SQLConnect.Updatedata("INSERT INTO Log_Status(Process,Status,LogDate) VALUES ('PurchaseOrderItemNote','Successful',GETDATE())", "dbDW"); //--Claude 251169
+
                 Console.WriteLine($"Op_PurchaseOrderItemNote : Sync Successful ({rowCount})");
             }
             catch (Exception ex)
             {
+                // เดิม throw; ทำให้ทั้งโปรแกรม crash และขั้นตอนหลังจากนี้ไม่ทำงาน -> เปลี่ยนเป็น log Fail แล้วไปขั้นตอนถัดไปเหมือนฟังก์ชันอื่น //--Claude 251169
+                string errMsg = ex.Message.Replace("'", "''");
+                SQLConnect.Updatedata($"INSERT INTO Log_Status(Process,Status,LogDate,LogDescription) VALUES ('PurchaseOrderItemNote','Fail',GETDATE(),'{errMsg}')", "dbDW");
+
                 Console.WriteLine(ex.Message);
                 Console.WriteLine(batchSql.ToString());
-                throw;
             }
         }
 
